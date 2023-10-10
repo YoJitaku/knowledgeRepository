@@ -1,0 +1,331 @@
+@startuml Camera
+
+class Node {
+}
+
+class Camera extends Node{
+  {static}+PERSPECTIVE_CAMERA : int {投影相机/默认}
+  {static}+ORTHOGRAPHIC_CAMERA : int {正交相机}
+  {static}+FOVMODE_VERTICAL_FIXED : int {Fov用垂直夹角/默认}
+  {static}+FOVMODE_HORIZONTAL_FIXED : int {Fov用水平夹角}
+  {static}{摇臂相机模式选择}
+  {static}+RIG_MODE_NONE : int 
+  {static}+RIG_MODE_STEREOSCOPIC_ANAGLYPH : int
+  {static}+RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : int
+  {static}+RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED : int
+  {static}+RIG_MODE_STEREOSCOPIC_OVERUNDER : int
+  {static}+RIG_MODE_STEREOSCOPIC_INTERLACED : int
+  {static}+RIG_MODE_VR : int
+  {static}+RIG_MODE_WEBVR : int
+  {static}+RIG_MODE_CUSTOM : int
+  {static}+ForceAttachControlToAlwaysPreventDefault : boolean  {有输入控制时阻止JS事件}
+  +inputs : CameraInputsManager<Camera> {相机配套的输入管理}
+  +position : Vector3
+  +upVector : Vector3
+  +screenArea : number {根据正交或投影计算屏幕实际显示的场景面积}
+  {正交区域}
+  +orthoLeft : Nullable<number> 
+  +orthoRight : Nullable<number>
+  +orthoBottom : Nullable<number>
+  +orthoTop : Nullable<number>
+  +fov : number
+  +projectionPlaneTilt : number {投影面的水平倾斜度, 调整透视模式下的纵向垂线被视角倾斜的问题}
+  +minZ : number
+  +maxZ : number
+  +inertia : number {默认惯性}
+  +mode : number
+  +isIntermediate : boolean {是否为间接相机, 即不直接输出至屏幕, 还需要其他处理}
+  +viewport : Viewport
+  +layerMask : number
+  +fovMode : number
+  +cameraRigMode : number {摇臂模式选择, 常见的如VR双相机的固定}
+  +interaxialDistance : number {VR双相机的间距}
+  +isStereoscopicSideBySide : boolean {VR渲染中相机是并排还是上下}
+  +customRenderTargets : Array<RenderTargetTexture> {自定义相机渲染目标列表<非常重要>, 用于渲染至纹理<监控, 电视等>}
+  +outputRenderTarget : Nullable<RenderTargetTexture> {配上面的, 相机将渲染至此目标而非Canvas}
+  {观察者模式的事件}
+  +onViewMatrixChangedObservable : Observable<Camera> {视图矩阵发生变化}
+  +onProjectionMatrixChangedObservable : Observable<Camera> {透视矩阵发生变化}
+  +onAfterCheckInputsObservable : Observable<Camera> {输入发生变换}
+  +onRestoreStateObservable : Observable<Camera> {相机被重置}
+  +isRigCamera : boolean {相机有摇臂}
+  +rigParent : Camera {相机的摇臂}
+  +renderPassId : number {传递至帧缓冲时的ID}
+  +_webvrViewMatrix : Matrix {VR的视图矩阵}
+  #_globalPosition : Vector3 {相机所在世界的原点, 默认Zero}
+
+  +storeState() : Camera {储存当前Camera状态}
+  +restoreState() : boolean {恢复已储存的状态}
+  +getClassName() : string 
+  +toString(fullDetails?: boolean) : string {信息转string, 用于debug}
+  +applyVerticalCorrection() : void {投影模式的垂直矫正方法}
+  +getActiveMeshes() : SmartArray<AbstractMesh> {get当前帧下已激活Mesh的队列}
+  +isActiveMesh(mesh: Mesh) : boolean {Check一个Mesh是否在上面的队列中}
+  +isReady(completeCheck = false) : boolean {相机已就绪, 渲染/使用}
+  +attachControl() : void {添加一个输入控制到dom元素, 用于获取输入}
+  +detachControl() : void {从指定dom元素上分离控制}
+  +update() : void {根据每帧收集到的dom输入来更新相机位置}
+  +rigPostProcess : Nullable<PostProcess> {获取摇臂相机的后期处理}
+  +attachPostProcess(postProcess: PostProcess, insertAt: Nullable<number> = null): number {附加一个后期处理}
+  +detachPostProcess(postProcess: PostProcess): void {分离一个后期处理}
+  +getWorldMatrix(): Matrix {获取世界矩阵}
+  +getViewMatrix(force?: boolean): Matrix {获取视图矩阵}
+  +freezeProjectionMatrix(projection?: Matrix): void {锁定投影矩阵, 当相机不动时减少投影矩阵重复计算}
+  +unfreezeProjectionMatrix(): void {解锁投影阵}
+  +getProjectionMatrix(force?: boolean): Matrix {获取投影阵}
+  +getTransformationMatrix(): Matrix {获取变换阵=ViewMtx * ProMtx}
+  -_updateFrustumPlanes(): void {更新视锥体平面信息}
+  +isInFrustum(target: ICullable, checkRigCameras = false): boolean {检查Mesh是否在视锥体内, 注意：此处只判断包围盒中心点}
+  +isCompletelyInFrustum(target: ICullable): boolean {此方法检查整个包围盒是否包围}
+  +getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {获取向前的射线}
+  +getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {同上, 返回传入的refRay}
+  +dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void
+  +isLeftCamera(): boolean {VR中的左相机标记}
+  +isRightCamera(): boolean  
+  +leftCamera(): Nullable<FreeCamera> {获得左相机}
+  +rightCamera(): Nullable<FreeCamera>
+  +getLeftTarget(): Nullable<Vector3> {左相机注视点}
+  +getRightTarget(): Nullable<Vector3>
+  +serialize(): any {序列化->Json}
+  +clone(name: string, newParent: Nullable<Node> = null): Camera 
+  +getDirection(localAxis: Vector3): Vector3 {获取方向, 在相机Local坐标系下}
+  +getDirectionToRef(localAxis: Vector3, result: Vector3): void {获取Local方向存于Vector3}
+  +get absoluteRotation(): Quaternion {相机角度, 四元数}
+  +computeWorldMatrix(): Matrix
+  +static GetConstructorFromName(): () => Camera {通过给定名称, 返回对应相机的构造函数}
+  +static Parse(parsedCamera: any, scene: Scene): Camera {解析器}
+}
+note right of Camera
+相机大基类, 主要是定义管理数据和数据交换
+endnote
+
+class TargetCamera extends Camera {
+  -cameraDirection: Vector3 {朝向}
+  -cameraRotation: Vector2 {旋转角, 经纬值}
+  -ignoreParentScaling: boolean {是否考虑父级的缩放}
+  -updateUpVectorFromRotation: boolean {旋转时自动更新upVector}
+  -rotation: Vector3 {旋转角, 欧拉角}
+  -rotationQuaternion: Quaternion {旋转角, 四元数}
+  -speed: number
+  -noRotationConstraint: boolean {是否开启约束}
+  -invertRotation: boolean {是否反转鼠标}
+  -inverseRotationSpeed: number {反转速率}
+  +lockedTarget: any {被锁定目标}
+  +constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive: boolean = true)
+  +getFrontPosition(distance: number): Vector3 {获得相机前方给定距离的点坐标}
+  +storeState(): Camera
+  +setTarget(target: Vector3): void {给定Vector3作为注视点}
+  +getTarget(): Vector3
+  +_updateCameraRotationMatrix()
+  +_rotateUpVectorWithCameraRotationMatrix(): TargetCamera {更新UpVector}
+  +getClassName(): string
+}
+note right of TargetCamera
+相机基类, 包含大量属性更新同步计算的方法(已略)
+endnote
+
+class ArcRotateCamera extends TargetCamera {
+  +alpha: number {经度}
+  +beta: number {纬度}
+  +radius: number {距离}
+  +overrideCloneAlphaBetaRadius: Nullable<boolean> {是否允许相机的重写和克隆}
+  +target: Vector3 {锁定点, 相机坐标}
+  +targetHost: Nullable<AbstractMesh> {或者是锁定mesh, 被锁定时禁用transfrom}
+  +getTarget(): Vector3 {返回相机本地坐标下的锁定点坐标}
+  +position: Vector3 {相机坐标}
+  +upVector: Vector3 {相机的UpDirection}
+  +setMatUp(): void {创建两个矩阵用于在Y-Up和Camera-Up的坐标系中变换}
+  {惯性值}
+  +inertialAlphaOffset: number
+  +inertialBetaOffset: number
+  +inertialRadiusOffset: number
+  +inertialPanningX: number {相机x轴}
+  +inertialPanningY: number {相机y轴}
+  +panningInertia: number
+  {数值限制}
+  +lowerAlphaLimit: Nullable<number>
+  +upperAlphaLimit: Nullable<number>
+  +lowerBetaLimit: Nullable<number>
+  +upperBetaLimit: Nullable<number>
+  +lowerRadiusLimit: Nullable<number>
+  +upperRadiusLimit: Nullable<number>
+  +pinchToPanMaxDistance: number {触屏设备: 区分捏合缩放操作和平移操作的阈值}
+  +panningDistanceLimit: Nullable<number> {平移最大距离}
+  +panningOriginTarget: Vector3 {平移前的原目标}
+  {灵敏度}
+  +angularSensibilityX: number
+  +angularSensibilityY: number
+  +pinchPrecision: number {捏合缩放速率}
+  +pinchDeltaPercentage: number {以当前距离的百分比作为缩放变化率}
+  +useNaturalPinchZoom: boolean {高级!!能实现多点触控缩放任何在目标点平面上的位置}
+  +panningSensibility: number {光标控制的相机移动灵敏度}
+  {纬度beta}
+  +keysUp: number[] 
+  +keysDown: number[] 
+  {经度alpha}
+  +keysLeft: number[] 
+  +keysRight: number[]
+  +wheelPrecision: number {滚轮缩放速率}
+  +zoomToMouseLocation: boolean {是否用滚轮缩放至光标位置}
+  +wheelDeltaPercentage: number {滚轮缩放版本, 同上面的捏合}
+  {相机行为}
+  +bouncingBehavior: Nullable<BouncingBehavior> {缩放达到最大最小限制时, 会触发回弹效果}
+  +useBouncingBehavior: boolean {是否启用缩放弹跳行为}
+  +framingBehavior: Nullable<FramingBehavior> {当相机在水平面下时, 自动回正至水平面上, 符合人类习惯}
+  +useFramingBehavior: boolean {是否启用自动调整至水平面上}
+  +autoRotationBehavior: Nullable<AutoRotationBehavior> {获取相机自旋行为}
+  +useAutoRotationBehavior: boolean {是否启用自旋功能}
+  +onMeshTargetChangedObservable: Observable<Nullable<AbstractMesh>> {锁定Mesh发生变化时的事件}
+  +onCollide: (collidedMesh: AbstractMesh) => void {碰撞事件}
+  +checkCollisions: boolean
+  +collisionRadius: Vector3 {碰撞半径, 模拟相机周围球体}
+  +constructor(...)
+  +storeState(): Camera {储存当前相机状态}
+  +attachControl(noPreventDefault?: boolean): void
+  +detachControl(): void
+  +rebuildAnglesAndRadius(): void {更新经纬+距离}
+  +setPosition(position: Vector3): void {用一个位置来更新经纬+距离}
+  +setTarget(...): void {设置锁定目标, 会自动调整经纬+距离}
+  +zoomOn(...): void {缩放至最近距离, 一边看到完整的最大mesh}
+  +focusOn(...): void {锁定一个mesh或者包围盒, 会自动适配改变目标和最大距离限制}
+  +createRigCamera(name: string, cameraIndex: number): Camera {重写Camera方法}
+  +dispose(): void
+  +getClassName(): string
+}
+note right of ArcRotateCamera
+绕固定点或Mesh运行的相机
+endnote
+
+class FlyCamera extends TargetCamera {
+  +ellipsoid: Vector3 {碰撞椭球体, 模拟机身}
+  +ellipsoidOffset: Vector3 
+  +checkCollisions: bool 
+  +applyGravity: bool 
+  +cameraDirection: Vector3 {当前移动方向}
+  +rotationQuaternion: Quaternion {旋转四元数}
+  +_trackRoll: number {滚动轨道, 只有四元数下可以实现哦~}
+  +rollCorrect: number {俯仰和偏转之后自动缓慢回正}
+  {压坡度, 飞行器在转弯时倾斜一定角度以保持在转弯过程中的高度和方向稳定}
+  +bankedTurn: boolean  
+  +bankedTurnLimit: number {最大倾斜角度}
+  +bankedTurnMultiplier: number {0: 禁用bankedTurn, 1: bankedTurn=偏航角}
+  +inputs: FlyCameraInputsManager
+  +angularSensibility: number
+  {设置或获取前后左右上下移动对应的按键}
+  +keysForward: number[]
+  +keysBackward: number[]
+  +keysUp: number[]
+  +keysDown: number[]
+  +keysLeft: number[]
+  +keysRight: number[]
+  +onCollide(collidedMesh: AbstractMesh): void
+  +collisionMask: number  {设置或获取需要忽略碰撞的图层}
+  +needMoveForGravity: boolean {无论是否移动, 都启用重力, 用输入判断是否移动}
+  +restoreRoll(rate: number): void {指定滚动轴上的自动回正速度}
+  +dispose(): void
+  +getClassName(): string
+  +attachControl(noPreventDefault?: boolean): void
+  +detachControl(): void
+  +constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive: bool = true)
+}
+note right of FlyCamera
+飞行相机
+endnote
+
+class FollowCamera extends TargetCamera {
+  {目标距离控制}
+  +radius: number = 12 
+  +lowerRadiusLimit: Nullable<number> = null 
+  +upperRadiusLimit: Nullable<number> = null
+  {角度控制}
+  +rotationOffset: number = 0
+  +lowerRotationOffsetLimit: Nullable<number> = null
+  +upperRotationOffsetLimit: Nullable<number> = null
+  {Offset控制}
+  +heightOffset: number = 4
+  +lowerHeightOffsetLimit: Nullable<number> = null
+  +upperHeightOffsetLimit: Nullable<number> = null
+
+  +cameraAcceleration: number = 0.05 {加速度}
+  +maxCameraSpeed: number = 20 {满速}
+  +lockedTarget: Nullable<AbstractMesh> {锁定目标}
+  +inputs: FollowCameraInputsManager
+  +constructor(name: string, position: Vector3, scene?: Scene, lockedTarget: Nullable<AbstractMesh> = null)
+  -_follow(cameraTarget: AbstractMesh): void {跟踪函数}
+  +attachControl(noPreventDefault?: boolean): void
+  +attachControl(ignored: any, noPreventDefault?: boolean): void
+  +detachControl(): void
+  +getClassName(): string
+}
+note right of FollowCamera
+跟踪指定Mesh, 普通版本//有视角限制
+endnote
+
+class ArcFollowCamera extends TargetCamera{
+  -_cartesianCoordinates: Vector3 = Vector3.Zero() {相机位置}
+  -_meshTarget: Nullable<AbstractMesh> {跟踪目标}
+  +alpha: number {经度}
+  +beta: number {纬度}
+  +radius: number {半径}
+  +constructor(name: string, alpha: number, beta: number, radius: number, target: Nullable<AbstractMesh>, scene: Scene)
+  +setMeshTarget(target: Nullable<AbstractMesh>): void {设置跟踪目标}
+  -_follow(): void {跟踪函数}
+  +getClassName(): string
+}
+note right of ArcFollowCamera
+跟踪指定Mesh, 旋转跟踪版本//无死角
+endnote
+
+class FreeCamera extends TargetCamera {
+  +ellipsoid: Vector3 = Vector3.Zero() {相机碰撞, 用的是椭球}
+  +ellipsoidOffset: Vector3 = Vector3.Zero() {相对于相机的Offset, 用于调整至头部}
+  +checkCollisions: boolean = false {启用/禁用相机于场景物体的碰撞}
+  +applyGravity: boolean = false {启用/禁用重力}
+  +inputs: FreeCameraInputsManager {输入控制管理}
+  +angularSensibility: number {键盘旋转灵敏度}
+  {设置或获取上下左右移动和左右歪脖,抬头低头对应的按键}
+  +keysUp: number[]
+  +keysUpward: number[]
+  +keysDown: number[]
+  +keysDownward: number[]
+  +keysLeft: number[]
+  +keysRight: number[]
+  +keysRotateLeft: number[]
+  +keysRotateRight: number[]
+  +keysRotateUp: number[]
+  +keysRotateDown: number[]
+  +onCollide(collidedMesh: AbstractMesh): void {碰撞发生触发的事件}
+  +collisionMask: number {碰撞掩码}
+  +needMoveForGravity: boolean {无论是否移动, 都启用重力, 用输入判断是否移动}
+  +constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive: boolean = true)
+  +attachControl(noPreventDefault?: boolean): void
+  +detachControl(): void 
+  +dispose(): void
+  +getClassName(): string
+}
+note right of FreeCamera
+只有keyboard和mouse控制
+endnote
+
+class TouchCamera extends FreeCamera {
+  +touchAngularSensibility: number {触摸板旋转灵敏度}
+  +touchMoveSensibility: number {触摸板移动灵敏度}
+  +constructor(name: string, position: Vector3, scene?: Scene)
+  +getClassName(): string
+}
+note right of TouchCamera
+添加了触摸板控制
+endnote
+
+class UniversalCamera extends TouchCamera {
+  +gamepadAngularSensibility: number {手柄旋转灵敏度}
+  +gamepadMoveSensibility: number {手柄移动灵敏度}
+  +constructor(name: string, position: Vector3, scene?: Scene)
+  +getClassName(): string
+}
+note right of UniversalCamera
+添加了手柄, 是官方的推荐首选第一人称相机
+endnote
+
+class CameraInputsManager<TCamera extends Camera> {}
+@enduml

@@ -1,0 +1,16 @@
+@startuml BabyCore
+
+Babyloncore -- Engine
+Babyloncore -- Scene
+Engine -- Event
+Scene -- Camera
+Scene -- Light
+Scene -- Mesh
+Scene -- Skeletons
+Scene -- ParticleSystem
+Scene -- Animation
+Engine -- Renderer
+Event -- Actions
+Event -- Observer
+
+@enduml

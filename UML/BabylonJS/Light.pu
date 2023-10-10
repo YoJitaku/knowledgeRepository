@@ -1,0 +1,286 @@
+@startuml light
+
+class Node {
+}
+
+note right of Node
+场景空间的根结点
+end note
+
+interface ISortableLight {
+  + shadowEnabled: boolean启用阴影
+  + renderPriority: number优先度
+}
+note left of ISortableLight
+用于控制多个光照的渲染顺序
+end note
+
+abstract class Light extends Node implements ISortableLight {
+  {光衰减模式}
+  {static}+FALLOFF_DEFAULT
+  {static}+FALLOFF_PHYSICAL
+  {static}+FALLOFF_GLTF
+  {static}+FALLOFF_STANDARD
+  {光照贴图模式}
+  {static}+LIGHTMAP_DEFAULT
+  {static}+LIGHTMAP_SPECULAR
+  {static}+LIGHTMAP_SHADOWSONLY
+  {光强度计算模式}
+  {static}+INTENSITYMODE_AUTOMATIC
+  {static}+INTENSITYMODE_LUMINOUSPOWER
+  {static}+INTENSITYMODE_LUMINOUSINTENSITY
+  {static}+INTENSITYMODE_ILLUMINANCE
+  {static}+INTENSITYMODE_LUMINANCE
+  {光种类}
+  {static}+LIGHTTYPEID_POINTLIGHT
+  {static}+LIGHTTYPEID_DIRECTIONALLIGHT
+  {static}+LIGHTTYPEID_SPOTLIGHT
+  {static}+LIGHTTYPEID_HEMISPHERICLIGHT
+
+  {光属性}
+  +diffuse: Color3 {漫反射}
+  +specular: Color3 {镜面反射}
+  +falloffType: number 
+  +intensity: number
+  +range: number {范围, 默认1.79E+308, js表示的最大数值, set之后由距离光衰减计算而得}
+  +intensityMode: number
+  +radius: number {光柱/锥半径}
+  +renderPriority: number 
+  +shadowEnabled: boolean 
+  +lightmapMode: number
+  {光照区域内的Mesh列表}
+  +includedOnlyMeshes: AbstractMesh[]
+  +excludedMeshes: AbstractMesh[]
+  {图层ID, 用于标记受和不受光照影响的网格}
+  +excludeWithLayerMask: number 
+  +includeOnlyWithLayerMask: number
+
+  -_shadowGenerators: Nullable<Map<Nullable<Camera>, IShadowGenerator>> {阴影发生器}
+  -_excludedMeshesIds: string[]
+  -_includedOnlyMeshesIds: string[]
+  -_uniformBuffer: UniformBuffer {统一缓冲区}
+  -_renderId: number {渲染ID, 每帧会有多个渲染运行}
+  -_lastUseSpecular: boolean {是否支持镜面反射}
+  +constructor(name: string, scene?: Scene)
+  #{abstract}_buildUniformLayout(): void {纯虚函数, 需要子类具体灯光定义缓冲区格式}
+  +{abstract}transferToEffect(effect: Effect, lightIndex: string): Light {纯虚函数, 将光信息传递至Effect}
+  +transferTexturesToEffect(effect: Effect, lightIndex: string): Light {光纹理模式传递至Effect}
+  +_bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {将场景中的灯光信息绑定至给定Mesh的Effect中}
+  +{abstract}transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light {纯虚函数, 传递光源信息到着色器效果中}
+  +toString(fullDetails?: boolean): string {将光信息转化为human readable字符串, 用于调试}
+  #_syncParentEnabledState(): void {同步父级状态}
+  +setEnabled(value: boolean): void {启动}
+  +getShadowGenerator(camera?: Nullable<Camera>): Nullable<IShadowGenerator> {取得与当前灯光相关的阴影发生器}
+  +getShadowGenerators(): Nullable<Map<Nullable<Camera>, IShadowGenerator>> {取得与当前灯光相关的所有阴影发生器}
+  +getAbsolutePosition(): Vector3 {返回世界原点}
+  +canAffectMesh(mesh: AbstractMesh): boolean {判断网格是否被当前灯光影响}
+  +dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {释放与该Node相关的所有资源}
+  +getTypeID(): number
+  +getScaledIntensity(): any {根据灯光类型和强度模式计算后的实际光强度}
+  +clone(name: string, newParent?: Nullable<Node>): Nullable<Light> 
+  +serialize(): any {序列化}
+  +{static}Parse(parsedLight: any, scene: Scene): Nullable<Light> {解析器, 返回一个实例光}
+  -_hookArrayForExcluded(array: AbstractMesh[]): void {同步Mesh信息, 用的是抽象mesh基类的一个纯虚方法}
+  -_hookArrayForIncludedOnly(array: AbstractMesh[]): void {用的是Light类的mesh同步方法}
+  -_resyncMeshes() {同步与当前光源相关的所有网格储存的光源信息}
+  +_markMeshesAsLightDirty(): void {标记为脏, 即需要强制更新}
+  -_computePhotometricScale(): void {计算光度学刻度}
+  -_getPhotometricScale() {根据灯光类型和强度模式返回光度学刻度}
+  +_reorderLightsInScene(): void {根据优先级顺序, 对场景中的所有灯光进行重新排序}
+  +{abstract}prepareLightSpecificDefines(defines: any, lightIndex: number): void {纯虚函数, 根据光的种类为着色器Effect准备相应的预处理指令}
+}
+
+class HemisphericLight extends Light {
+  +groundColor: Color3 {地表半球颜色}
+  +direction: Vector3 {方向->默认Vector3.up}
+  +constructor(name: string, direction: Vector3, scene?: Scene)
+  #_buildUniformLayout(): void {此处重写了基类Light的纯虚方法}
+  +getClassName(): string
+  +setDirectionToTarget(target: Vector3): Vector3 {重定位Direction}
+  +getShadowGenerator(): Nullable<IShadowGenerator>
+  +transferToEffect(_effect: Effect, lightIndex: string): HemisphericLight {此处重写了基类Light的纯虚方法}
+  +transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {此处重写了基类Light的纯虚方法}
+  +computeWorldMatrix(): Matrix {获取Node中储存的世界矩阵,默认单位阵}
+  +getTypeID(): number
+  +prepareLightSpecificDefines(defines: any, lightIndex: number): void
+}
+
+note right of HemisphericLight::_buildUniformLayout
+("vLightData", 4);
+("vLightDiffuse", 4);
+("vLightSpecular", 4);
+("vLightGround", 3);
+("shadowsInfo", 3);
+("depthValues", 2);
+end note
+
+interface IShadowLight extends Light {
+  +id: string
+  +position: Vector3 {阴影投射的位置}
+  +direction: Vector3 {2D模式下的阴影投射方向}
+  +transformedPosition: Vector3 {光线的世界坐标}
+  +transformedDirection: Vector3 {光线的方向}
+  +name: string
+  +shadowMinZ: number {投影裁切面的最小Z值}
+  +shadowMaxZ: number {投影裁切面的最大Z值}
+  +computeTransformedInformation(): boolean {光线信息是否需要重新计算}
+  +getScene(): Scene 
+  +customProjectionMatrixBuilder(viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix): void {自定义投影矩阵, 覆盖默认}
+  +setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): IShadowLight {从参数中生成投影矩阵}
+  +getDepthScale(): number
+  +needCube(): boolean {返回阴影生成器是否需要立体纹理/2D纹理}
+  +needProjectionMatrixCompute(): boolean {检测当前帧是否需要更新投影矩阵}
+  +forceProjectionMatrixCompute(): void {} {在方向位置没有变化的情况下,强制更新投影矩阵}
+  +getShadowDirection(faceIndex?: number): Vector3 {渲染阴影贴图的的方向, 立方体纹理的情况下传递面索引}
+  +getDepthMinZ(activeCamera: Camera): number 
+  +getDepthMaxZ(activeCamera: Camera): number
+}
+note right of IShadowLight
+问：为啥这里要有个IShadowLight接口类?
+答：架构师只负责写接口，实现则交给一线人员处理XD
+end note
+note right of IShadowLight
+未解决问题，什么是立方体纹理？
+end note
+
+abstract class ShadowLight extends Light implements IShadowLight {
+  {此处省略所有在IShadowLight中定义过的接口的实现}
+  +getAbsolutePosition(): Vector3 {返回Light的世界坐标}
+  +setDirectionToTarget(target: Vector3): Vector3 
+  +getRotation(): Vector3 {返回Light的旋转角,欧拉模式}
+  +_initCache(): void {Call了一下父类Node的initCache}
+  +_isSynchronized(): boolean {检查坐标是否同步, 当前坐标和Node中的Cache坐标}
+  +computeWorldMatrix(force?: boolean): Matrix {需要检测Cache中的世界矩阵是否同步}
+  -_setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void
+  -_setPosition(value: Vector3): void
+  -_setDirection(value: Vector3): void
+  -_needProjectionMatrixCompute: boolean
+  -_cache: any
+  -_worldMatrix: Matrix
+  {半球光没有具体坐标, 而Shadowlight下的三种光都有出发点, 若灯光移动/世界矩阵变换, 则对应阴影全部需要更新同步！！}
+  -_worldMatrixDeterminantIsDirty: boolean 
+}
+
+note right of ShadowLight
+遵循DRY模式 dont repeat urself
+包含所有常见的行为
+end note
+
+class DirectionalLight extends ShadowLight{
+  -_shadowFrustumSize: number {阴影生成范围，0则代表禁用}
+  -_shadowOrthoScale: number {平行光用正交投影, 范围会自动设置, 此处值为0.1时代表在自动最佳范围上再扩大10%}
+  -_orthoLeft: number 
+  -_orthoRight: number
+  -_orthoTop: number
+  -_orthoBottom: number
+  +shadowFrustumSize: number 
+  +shadowOrthoScale: number
+  +autoUpdateExtends: boolean {是否自动计算投影矩阵到最佳配置, 默认true, 每帧执行}
+  +autoCalcShadowZBounds: boolean {是否自动计算投影矩阵的Z值, 默认false, 基于上面的每帧执行}
+  +orthoLeft: number
+  +orthoRight: number
+  +orthoTop: number
+  +orthoBottom: number
+  #_buildUniformLayout(): void
+  #_setDefaultAutoExtendShadowProjectionMatrix(): void {自动调节截锥体大小的情况下, 计算投影矩阵}
+  #_setDefaultFixedFrustumShadowProjectionMatrix(): void {固定阴影截锥体大小的情况下, 计算投影矩阵}
+  #_setDefaultShadowProjectionMatrix(): void {根据shadowFrustumSize的值0或者>0, 选择投影矩阵计算方法}
+  +computeWorldMatrix(force?: boolean): Matrix
+  +getClassName(): string
+  +getTypeID(): number
+  +transferToEffect(effect: Effect, lightIndex: string): DirectionalLight
+  +transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light
+  +getDepthMinZ(activeCamera: Camera): number
+  +getDepthMaxZ(activeCamera: Camera): number
+  +prepareLightSpecificDefines(defines: any, lightIndex: number): void
+}
+
+note right of DirectionalLight::_buildUniformLayout
+("vLightData", 4);
+("vLightDiffuse", 4);
+("vLightSpecular", 4);
+("shadowsInfo", 3);
+("depthValues", 2);
+endnote
+
+class PointLight extends ShadowLight {
+  -_shadowAngle: number {默认PI/2, 此时立方体纹理和阴影贴图的效果最好}
+  +shadowAngle: number
+  +direction: Vector3 {若提供了方向, 则点光源将模拟探照灯使用//点光源默认无方向=全方向}
+  +position: Vector3 
+  +shadowMinZ: number
+  +shadowMaxZ: number
+  -_scene: Scene
+  -_uniformBuffer: UniformBuffer
+  -_inverseSquaredRange: number
+  -_shadowGenerators: Map
+  -_direction: Vector3
+  +getClassName(): string
+  +getTypeID(): number
+  +needCube(): boolean
+  +getShadowDirection(faceIndex?: number): Vector3
+  #_setDefaultShadowProjectionMatrix(): void {左手坐标系, Fov=90/纵横比为1.0}
+  #_buildUniformLayout(): void
+  +transferToEffect(effect: Effect, lightIndex: string): PointLight
+  +transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): PointLight
+  +prepareLightSpecificDefines(defines: any, lightIndex: number): void
+}
+
+note right of PointLight::_buildUniformLayout
+("vLightData", 4);
+("vLightDiffuse", 4);
+("vLightSpecular", 4);
+("vLightFalloff", 4);
+("shadowsInfo", 3);
+("depthValues", 2);
+endnote
+
+class SpotLight extends ShadowLight {
+  {此处省略内部用私有属性, 大多数与投影纹理的计算相关}
+  +angle: number {锥角, 一般情况下0到90度之间}
+  +innerAngle: number {只用于gltf衰减模式下, 定义方向衰减开始的角度?}
+  +shadowAngleScale: number 
+  +exponent: number {记录光衰减与距离的相关性}
+  +projectionTextureMatrix: Matrix {投影纹理矩阵, 默认为零矩阵}
+  +projectionTextureLightNear: number {聚光灯到投影纹理的最小距离}
+  +projectionTextureLightFar: number {聚光灯到投影纹理的最大距离}
+  +projectionTextureUpDirection: Vector3 {定义Up Direction, 用于建立以聚光灯为原点的坐标系}
+  +projectionTexture: Nullable<BaseTexture> {聚光灯的投影纹理}
+  +constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene?: Scene)
+  +getClassName(): string
+  +getTypeID(): number
+  #_setDirection(value: Vector3)
+  #_setPosition(value: Vector3)
+  #_setDefaultShadowProjectionMatrix(): void
+  #_computeProjectionTextureViewLightMatrix(): void {视图矩阵的更新}
+  #_computeProjectionTextureProjectionLightMatrix(): void {投影矩阵的更新}
+  #_computeProjectionTextureMatrix(): void {纹理矩阵的更新}
+  #_buildUniformLayout(): void
+  -_computeAngleValues(): void
+  +transferTexturesToEffect(effect: Effect, lightIndex: string): Light
+  +transferToEffect(effect: Effect, lightIndex: string): SpotLight
+  +transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): SpotLight
+  +dispose(): void
+  +getDepthMinZ(activeCamera: Camera): number
+  +getDepthMaxZ(activeCamera: Camera): number
+  +prepareLightSpecificDefines(defines: any, lightIndex: number): void
+}
+
+note right of SpotLight::_buildUniformLayout
+("vLightData", 4);
+("vLightDiffuse", 4);
+("vLightSpecular", 4);
+("vLightDirection", 3)
+("vLightFalloff", 4);
+("shadowsInfo", 3);
+("depthValues", 2);
+endnote
+
+interface IShadowGenerator{
+
+}
+
+class ShadowGenerator implements IShadowGenerator{
+
+}
+@enduml

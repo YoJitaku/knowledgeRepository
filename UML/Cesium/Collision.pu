@@ -1,0 +1,22 @@
+@startuml Collision
+
+class OrientedBoundingBox{
+
+}
+
+class BoundingSphere{
+
+}
+
+class TileBoundingVolume{
+
+}
+
+class TileOrientedBoundingBox extends TileBoundingVolume implements OrientedBoundingBox{
+
+}
+
+class TileBoundingSphere extends TileBoundingVolume implements BoundingSphere{
+
+}
+@enduml

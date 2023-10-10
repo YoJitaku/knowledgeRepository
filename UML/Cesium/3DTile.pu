@@ -1,0 +1,144 @@
+@startuml 3DTile
+
+class 3DTileset{
+  +isCesium3DTileset : boolean {标记, 与PrimitiveCollection区别}
+  +asset : object {瓦片集的资产对象, 其中包含了metaData元数据}
+  +extensions : object {瓦片集的扩展对象, 一般是一些特殊功能或新功能}
+  +clippingPlanes : ClippingPlaneCollection {裁切平面组}
+  +properties : object
+  +tilesLoaded : boolean {当前帧下, 所有符合屏幕空间误差的帧都已被加载}
+  +resource : Resource {获取瓦片集的JSON文件}
+  +basePath : string {JSON文件的路径, 从此处出发JSON中一般都是相对路径 }
+  +style : Cesium3DTileStyle 
+  +customShader : CustomShader 
+  +hasMixedContent : boolean
+  +isSkippingLevelOfDetail : boolean
+  +metadataExtension : Cesium3DTilesetMetadata
+  +metadata : TilesetMetadata
+  +schema : MetadataSchema
+  +maximumScreenSpaceError : number
+  +maximumMemoryUsage : number
+  +cacheBytes : number
+  +maximumCacheOverflowBytes : number
+  +memoryAdjustedScreenSpaceError : number
+  +pointCloudShading : PointCloudShading
+  +root : Cesium3DTile
+  +boundingSphere : BoundingSphere
+  +modelMatrix : Matrix4
+  +timeSinceLoad : number
+  +totalMemoryUsageInBytes : number
+  +clippingPlanesOriginMatrix : Matrix4
+  +styleEngine : StyleEngine
+  +statistics : Statistics
+  +classificationType : ClassificationType
+  +ellipsoid : Ellipsoid
+  +foveatedConeSize : number
+  +foveatedMinimumScreenSpaceErrorRelaxation : number
+  +extras : *
+  +imageBasedLighting : ImageBasedLighting
+  +vectorClassificationOnly : boolean
+  +vectorKeepDecodedPositions : boolean
+  +showCreditsOnScreen : boolean
+
+  {static}+<<async>>fromIonAssetId() {从Cesium服务器上通过ID获取Tileset.json}
+  {static}+<<async>>fromUrl() {从地址获取Tileset.json}
+  {static}+loadJson() {提供重写远程请求Tileset方法的Hook}
+  +makeStyleDirty() {标记Style为脏, 强制更新}
+  -loadTileset() {将Tileset.json加载成JsObj}
+  -postPassesUpdate() {所有与render通道无关的更新项, 后处理版}
+  -prePassesUpdate() {所有与render通道无关的更新项, 预处理版}
+  +trimLoadedTiles() {卸载上一帧中未被选中的瓦片, 提升性能. 实际运行在下一帧中}
+  -getTraversal() {选择瓦片遍历器}
+  -update() {更新控制}
+  -updateForPass() {更新render通道相关项}
+  +hasExtension() {检查JsonFile中是否有记录扩展}
+  {static}+supportedExtensions {支持的扩展}
+  -checkSupportedExtensions() {检查具体扩展是否支持}
+  +isDestroyed()
+  +destroy()
+
+  ~makeTile()
+  ~<<async>>processMetadataExtension()
+  ~updateDynamicScreenSpaceError()
+  ~requestContent()
+  ~sortTilesByPriority()
+  ~cancelOutOfViewRequests()
+  ~requestTiles()
+  ~handleTileFailure()
+  ~filterProcessingQueue()
+  ~processTiles()
+  ~increaseScreenSpaceError()
+  ~decreaseScreenSpaceError()
+  ~formatMemoryString()
+  ~computeTileLabelPosition()
+  ~addTileDebugLabel()
+  ~updateTileDebugLabels()
+  ~updateTiles()
+  ~destroySubtree()
+  ~unloadTile()
+  ~destroyTile()
+  ~raiseLoadProgressEvent()
+  ~resetMinimumMaximum()
+  ~detectModelMatrixChanged()
+  ~update()
+}
+
+class 3DTile{
+  +constructor(tileset, baseResource, header, parent)
+  +tileset: Cesium3DTileset {包含当前瓦片的瓦片集}
+  +content: Cesium3DTileContent {瓦片的有效内容, 并不是JsonFile}
+  +boundingVolume: TileBoundingVolume {瓦片的包围盒}
+  +contentBoundingVolume: TileBoundingVolume {从瓦片有效内容中获取的包围盒}
+  +boundingSphere: BoundingSphere {从包围盒中导出的包围球}
+  +isVisible: boolean {是否可见}
+  +extras: object {瓦片集Json中是否有描述该瓦片的特定内容}
+  +color: Color {高亮表示时的颜色}
+  +hasRenderableContent: boolean {表示瓦片是否有可以渲染, 有可能空/指向外部另一个瓦片集/隐式内容}
+  +contentAvailable: boolean {表示瓦片是否有可渲染的内容, 或者已过期需要render重新加载}
+  +contentReady: boolean {瓦片内容是否就绪, 空也=true}
+  +contentUnloaded: boolean {瓦片内容是否已卸载, 没有被请求过也=ture}
+  +hasUnloadedRenderableContent: boolean {是否有已卸载的renderable内容}
+  +contentExpired: boolean {瓦片内容是否过期}
+  +contentFailed: boolean {瓦片内容加载失败}
+  +commandsLength: int {返回瓦片使用draw Call的次数}
+  -getScreenSpaceError() {屏幕空间误差, 屏幕结果与实际物体有位置误差, 由有限的像素分辨率/深度信息的精度产生}
+  -updateVisibility() {更新瓦片的可见度}
+  -updateExpiration() {更新瓦片是否过期}
+  -requestContent() {请求瓦片内容}
+  -cancelRequests() {取消请求, 当瓦片在视锥之外时}
+  -unloadContent() {卸载瓦片内容}
+  -visibility() {判断瓦片包围盒是否在视锥体内}
+  -contentVisibility() {内容物包围盒是否在视锥体内}
+  -distanceToTile() {计算瓦片包围盒上到相机最近距离}
+  -distanceToTileCenter() {计算包围盒中心到相机的距离}
+  -insideViewerRequestVolume() {判断相机和瓦片内容中包含的视图请求体积的位置关系}
+  -createBoundingVolume() {创建一个包围盒}
+  -updateTransform() {更新瓦片的变换矩阵, 会同步到瓦片包围盒}
+  -updateGeometricErrorScale() {更新几何误差, 几何误差由瓦片到相机的距离决定}
+  -update() {获取绘制瓦片所需要的渲染命令}
+  -process() {处理瓦片内容, 如获取webGL资源等, 完成PROCESSING->READY}
+  -updatePriority() {基于距离和深度进行的瓦片优先级更新}
+  -isDestroyed()
+  -destroy()
+  ~isPriorityProgressiveResolution()
+  ~getPriorityReverseScreenSpaceError()
+  ~updateExpireDate()
+  ~createPriorityFunction()
+  ~requestMultipleContents()
+  ~<async>>processArrayBuffer()
+  ~requestSingleContent()
+  ~<<async>>makeContent()
+  ~getBoundingVolume()
+  ~getContentBoundingVolume()
+  ~createBox() {创建Box包围盒}
+  ~createBoxFromTransformedRegion() {通过经纬区域创建Box包围盒}
+  ~createRegion() {创建经纬区域包围盒}
+  ~createSphere() {创建球形包围盒}
+  ~applyDebugSettings() 
+  ~updateContent()
+  ~updateClippingPlanes()
+  ~isolateDigits()
+  ~priorityNormalizeAndClamp()
+}
+
+@enduml
