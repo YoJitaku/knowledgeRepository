@@ -1,0 +1,18 @@
+@startuml material
+
+interface IAnimatable{}
+interface IClipPlanesHolder{}
+
+class Material implements IAnimatable, IClipPlanesHolder{
+
+}
+
+interface Material{}
+interface PBRBaseMaterial{}
+abstract class PBRBaseMaterial extends PushMaterial {}
+class PBRMaterial extends PBRBaseMaterial{}
+class PushMaterial extends Material{}
+interface IShaderMaterialOptions{}
+class ShaderMaterial extends PushMaterial{}
+
+@enduml

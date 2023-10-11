@@ -1,0 +1,229 @@
+@startuml Mesh
+
+class abstractMesh extends TransfomNode implements IDisposable, ICullable, IGetSetVerticesData{
+  {遮挡计算模式}
+  {static}+OCCLUSION_TYPE_NONE: number {无}
+  {static}+OCCLUSION_TYPE_OPTIMISTIC: number {乐观模式}
+  {static}+OCCLUSION_TYPE_STRICT: number {严格模式}
+  {static}+OCCLUSION_ALGORITHM_TYPE_ACCURATE: number {精确算法}
+  {static}+OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE: number {保守算法}
+  {剔除策略}
+  +CULLINGSTRATEGY_STANDARD {最精确的方式, 1.包围球是否在视锥外? 2.包围Box顶点是否在视锥外?}
+  +CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY {仅测试包围球, 不检测包围Box}
+  +CULLINGSTRATEGY_OPTIMISTIC_INCLUSION {1.检测包围球中心是否在视锥外? 2.包围Box的检测}
+  +CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY {1.检测包围球中心是否在视锥外? 2.检查包围球仍相交的对象}
+  {公告牌}
+  +BILLBOARDMODE_NONE: number
+  +BILLBOARDMODE_X: number
+  +BILLBOARDMODE_Y: number
+  +BILLBOARDMODE_Z: number
+  +BILLBOARDMODE_ALL: number
+  +BILLBOARDMODE_USE_POSITION: number
+  +facetNb(): number {获取Mesh的片元面数量}
+  +partitioningSubdivisions(): number {获取或设置分割空间中每个轴上的子分割数}
+  +partitioningBBoxRatio(): number {分割空间比率, 实际上方法会根据轴最大尺寸自动配置分割数}
+  +mustDepthSortFacets(): Vector3 {下次更新Mesh时必须调用深度排序, Mesh自身半透明时, 三角面Draw的顺序必须改变, 同样需要遵循深度排序}
+  +facetDepthSortFrom(): Vector3 {设置和获取位置:默认从相机位置开始进行Mesh表面的片元深度排序计算}
+  +collisionRetryCount(): number {用于控制碰撞检测的尝试次数}
+  +isFacetDataEnabled(): boolean {是否启用Mesh的片元面功能}
+  +morphTargetManager(): Nullable<MorphTargetManager> {可形变Mesh管理器, 比如闭嘴0-->张嘴1, 区间内任意状态/张嘴幅度可变, GPU层面}
+  +bakedVertexAnimationManager(): ... {烘培顶点动画管理器, 曾经由CPU计算动画应用于骨骼, 现在将动画储存至纹理, 通常称VAT/顶点动画纹理}
+  {事件}
+  +onCollideObservable: Observable<AbstractMesh>  {发生碰撞}
+  +onCollisionPositionChangeObservable: Observable<Vector3> {碰撞位置发生变化}
+  +onMaterialChangedObservable: Observable<AbstractMesh> {材质变化}
+  +onRebuildObservable: Observable<AbstractMesh> {重建Mesh的事件}
+  +definedFacingForward: boolean {POV已定义}
+  +visibility: number {Mesh可见性0到1, 默认为1}
+  +alphaIndex: number {Mesh的另一个影响渲染的属性: 透明度索引, 覆盖深度排序, 索引低的网格永远优先渲染, 不讨论深度}
+  +isVisible: boolean {Mesh是否可见}
+  +isPickable: boolean {Mesh是否可被拾取}
+  +isNearPickable: boolean {Mesh是否可被近距离拾取}
+  +isNearGrabbable: boolean {Mesh是否可被近距离抓取}
+  +showSubMeshesBoundingBox: boolean {是否同时渲染子Mesh包围盒}
+  +isBlocker: boolean {Mesh是否应用镜头耀斑效果}
+  +enablePointerMoveEvents: boolean {Mesh支持光标移动事件, 默认false}
+  +pointerOverDisableMeshTesting: boolean {是否测试光标下的Mesh是否与之前的相同, 默认False}
+  +renderingGroupId: number {指定当前Mesh所处的渲染组, 默认0}
+  +material: Nullable<Material> {材质}
+  +getMaterialForRenderPass {特定渲染时所需的材质}
+  +receiveShadows: boolean {Mesh是否接受实时阴影}
+  +outlineColor = Color3.Red() {Mesh的轮廓颜色}
+  +outlineWidth = 0.02 {Mesh的轮廓厚度}
+  +overlayColor = Color3.Red() {Mesh的包裹颜色}
+  +overlayAlpha = 0.5 {Mesh的包裹透明度}
+  +hasVertexAlpha: boolean {包含带有透明度的顶点数据}
+  +useVertexColors: boolean {需要使用顶点数据的颜色渲染}
+  +computeBonesUsingShaders: boolean {骨骼动画必须用GPU计算}
+  +numBoneInfluencers: number {每个顶点允许的骨骼影响数}
+  +applyFog: boolean {允许Mesh表面渲染雾效果}
+  +enableDistantPicking: boolean {启用远程拾取, 提高远处的拾取精度, 因为数字大导致计算误差大, 精度下降}
+  {内部八叉树}
+  +useOctreeForRenderingSelection: boolean {启用增强子Mesh选择}
+  +useOctreeForPicking: boolean {启用增强子Mesh拾取}
+  +useOctreeForCollisions: boolean {启用增强子Mesh碰撞}
+  +layerMask: number {图层, 默认0x0FFFFFFF}
+  +alwaysSelectAsActiveMesh: boolean {永远渲染, 激活时Mesh跳过视锥剔除阶段}
+  +doNotSyncBoundingInfo: boolean {不需要保持包围信息同步, 提升性能}
+  +actionManager: Nullable<AbstractActionManager> {行为管理器}
+  {模拟Mesh的椭圆体}
+  +ellipsoid: Vector3
+  +ellipsoidOffset: Vector3
+  +collisionMask: number {碰撞层, 默认-1}
+  +collisionResponse: boolean {碰撞响应标识}
+  +collisionGroup: number {碰撞组, 默认-1}
+  +surroundingMeshes: Nullable<AbstractMesh[]> {获取当前Mesh周围的Mesh, 默认为空}
+  +edgesWidth: number {Mesh线条粗细程度}
+  +edgesColor: Color4 {Mesh线条颜色}
+  +_edgesRenderer: Nullable<IEdgesRenderer> {线条绘制专门的渲染器}
+  +subMeshes: SubMesh[] {子Mesh列表}
+  +_lightSources: Light[] {影响当前Mesh的光源列表}
+  +skeleton(value: Nullable<Skeleton>) {蒙皮所需要的骨骼}
+  +_uniformBuffer: UniformBuffer {Mesh的统一缓冲区}
+  +constructor(name: string, scene: Nullable<Scene> = null)
+  #_buildUniformLayout(): void {创建缓冲区格式}
+  +transferToEffect(world: Matrix): void {传递至Effect}
+  +getMeshUniformBuffer(): UniformBuffer
+  +getClassName(): string
+  +toString(fullDetails?: boolean): string {转换成字符串, 调试用}
+  +markAsDirty(property?: string): AbstractMesh {Mesh标记为脏}
+  +resetDrawCache(passId?: number): void {重置Mesh下所有子Mesh的Draw缓存设定}
+  +isBlocked(): boolean {是否被遮挡}
+  {由子类实现, 返回0/Null/this指针等}
+  +getLOD(camera: Camera): Nullable<AbstractMesh> {需要自定义LOD逻辑}
+  +getTotalVertices(): number {顶点数量}
+  +getTotalIndices(): number {索引数量}
+  +getIndices(): Nullable<IndicesArray> {null}
+  +getVerticesData(kind: string): Nullable<FloatArray> {null}
+  +setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {this}
+  +updateVerticesData(...): AbstractMesh {this}
+  +updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): AbstractMesh {this}
+  +setIndices(indices: IndicesArray, totalVertices: Nullable<number>): AbstractMesh {false}
+  +isVerticesDataPresent(kind: string): boolean 
+  +getBoundingInfo(): BoundingInfo {获得Mesh包围盒}
+  +getRawBoundingInfo(): BoundingInfo {获得Mesh包围盒, 包括子Mesh}
+  +setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh
+  +hasBoundingInfo(): boolean 
+  +buildBoundingInfo(...): BoundingInfo {创建}
+  +normalizeToUnitCube(...): AbstractMesh {均匀缩放Mesh到1*1*1的体积内, 归一化}
+  +useBones(): boolean {是否含有骨骼信息}
+  +getWorldMatrix(): Matrix {获取世界矩阵}
+  +isAnInstance(): boolean {实例Mesh还是普通Mesh?}
+  +hasInstances(): boolean {是否含有普通实例? 普通实例会复制网格几何信息, 包括顶点坐标, 法线等, 每个实例需单独渲染}
+  +hasThinInstances(): boolean {是否含有薄实例? 薄实例在渲染性能上有巨大优势, 每个实例只需要额外的变换矩阵改变位置}
+  {POV相关, 针对Mesh锁定的视角, 利用Mesh的Local坐标系, 所以才会在Mesh中定义}
+  +movePOV(amountRight: number, amountUp: number, amountForward: number): AbstractMesh {移动}
+  +calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3 {计算一个移动}
+  +rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): AbstractMesh {旋转}
+  +calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3 {计算一个旋转}
+  +refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): AbstractMesh {重置包围盒信息}
+  +getNormalsData(applySkeleton = false, applyMorph = false): Nullable<FloatArray> {获得顶点法线信息, 用于骨骼和形变}
+  +getPositionData(...): Nullable<FloatArray> {获得顶点坐标信息, 用于骨骼和形变}
+  +isInFrustum(frustumPlanes: Plane[]): boolean {在视锥之内, BB与视锥相交也算}
+  +isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {完全在视锥之内, BB在视锥内}
+  +intersectsMesh(...): boolean {Mesh与另一个Mesh或固态粒子相交}
+  +intersectsPoint(point: Vector3): boolean {如果传递的点是否在Mesh的包围盒内}
+  {碰撞}
+  +checkCollisions: boolean {启用碰撞}
+  +collider: Nullable<Collider> {获取碰撞盒}
+  +moveWithCollisions(displacement: Vector3): AbstractMesh {碰撞引擎控制movement}
+  +intersects(...): PickingInfo {判断射线是否与Mesh相交, 无视片元正反面}
+  +clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>
+  +releaseSubMeshes(): AbstractMesh {释放所有子Mesh}
+  +dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void
+  +addChild(mesh: AbstractMesh, preserveScalingSign?: boolean): AbstractMesh {给当前Mesh添加一个子Mesh}
+  +removeChild(mesh: AbstractMesh, preserveScalingSign?: boolean): AbstractMesh {移除}
+  {Mesh片元面相关}
+  +updateFacetData(): AbstractMesh {更新Mesh内部片元面信息}
+  +getFacetLocalNormals(): Vector3[] {本地法线}
+  +getFacetLocalPositions(): Vector3[] {本地坐标}
+  +getFacetLocalPartitioning(): number[][] {分区}
+  +getFacetPosition(i: number): Vector3  {返回第i个面在世界坐标中的位置}
+  +getFacetPositionToRef(i: number, ref: Vector3): AbstractMesh {赋值给ref}
+  +getFacetNormal(i: number): Vector3 {世界坐标系下的法线}
+  +getFacetNormalToRef(i: number, ref: Vector3) {赋值给ref}
+  +getFacetsAtLocalCoordinates(x: number, y: number, z: number): Nullable<number[]> {返回参数坐标所在区块的片元面数组}
+  +getClosestFacetAtCoordinates(...): Nullable<number> {寻找与参数坐标最接近的片元面索引, 找不到为null}
+  +getClosestFacetAtLocalCoordinates(...): Nullable<number> {本地坐标参数版本}
+  +getFacetDataParameters(): any {获取片元面的所有参数信息}
+  +disableFacetData(): AbstractMesh {禁用}
+  +createNormals(updatable: boolean): AbstractMesh {为Mesh创建法线数据}
+  +alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh {向给定方向对齐Mesh}
+  +disableEdgesRendering(): AbstractMesh {禁用}
+  +enableEdgesRendering(...): AbstractMesh {启用}
+  +getConnectedParticleSystems(): IParticleSystem[] {获取所有场景中的粒子发生器系统}
+}
+
+note right of AbstractMesh::_buildUniformLayout
+addUniform("world", 16);
+addUniform("visibility", 1);
+endnote
+
+note right of TransfomNode
+代替轴心矩阵, 用于当作Mesh在空间中的所有transform行为的中心点
+endnote
+note right of IDisposable
+场景管理中定义所有持有资源的类的释放接口
+endnote
+note right of ICullable
+定义所有可删减的对象
+endnote
+note right of IGetSetVerticesData
+定义所有可以获得和设置顶点数据类的接口
+endnote
+
+class Mesh extends AbstractMesh implements IGetSetVerticesData{
+
+}
+
+class Geometry implements IGetSetVerticesData{
+
+}
+note right of Geometry
+用于存储几何体数据（顶点缓冲区 + 索引缓冲区）的类
+endnote
+
+class VertexDataMaterialInfo{
+
+}
+note right of VertexDataMaterialInfo
+材料信息绑定至顶点
+endnote
+
+class VertexData{
+
+}
+note right of VertexData
+定义网格上的顶点数据
+endnote
+
+class TrailMesh extends Mesh {}
+note right of TrailMesh
+用于创建网格走过的轨迹
+endnote
+
+class SubMesh implements ICullable{
+
+}
+note right of SubMesh
+定义网格内的细分区域
+endnote
+
+class PolygonPoints{}
+class Polygon{}
+class PolygonMeshBuilder{}
+
+class MeshLODLevel{}
+
+class GroundMesh extends Mesh{}
+
+class GreasedLineMesh extends Mesh {}
+note right of GreasedLineMesh
+油脂线网格
+endnote
+
+class GoldbergMesh extends Mesh {}
+note right of GoldbergMesh
+戈德堡网格
+endnote
+@enduml

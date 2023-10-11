@@ -1,0 +1,113 @@
+@startuml Buffer
+
+class DataBuffer{
+  -static _Counter: int = 0 {总计数器}
+  +references: int = 0 {获取或引用该缓冲区的对象个数}
+  +capacity: int = 0 {获取或设置缓冲区大小}
+  +is32Bits: boolean = false {是否包含32位bits格式}
+  +underlyingResource: any {获得缓冲区}
+  +readonly uniqueId: int {获取唯一ID}
+  +constructor()
+}
+note right of DataBuffer
+储存单个显卡数据的类定义
+endnote
+note "DataBuffer是Buffer的底层实现, BabylonJs全平台, 这里相当于扩展了WebGLBuffer" as N2
+DataBuffer .. N2
+N2 .. Buffer
+
+class Buffer{
+  +<<readOnly>>byteStride: number {字节跨距, 即缓冲区两个元素间的间隔}
+  +constructor()
+  +createVertexBuffer(类型position,normal,etc/buffer中offset/size/stride?/index?): VertexBuffer {根据当前缓冲区创建新的顶点缓冲区}
+  +isUpdatable(): boolean {是否允许更新缓冲区}
+  +getData(): Nullable<DataArray> {获得缓冲区数据}
+  +getBuffer(): Nullable<DataBuffer> {获取底层原缓冲区数据}
+  +getStrideSize(): number {获取以float32为单位的跨距}
+  +create(data: Nullable<DataArray> = null): void {将数据存入缓冲区, 如果尚未启用则创建, 若已启用但禁止更新则do nothing}
+  +update(data: DataArray): void {更新}
+  +updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes: boolean = false): void (手动直接更新)
+  +dispose(): void
+}
+note right of Buffer
+将数个显卡数据组成一个缓冲区存储
+endnote
+
+class VertexBuffer{
+  {static}-_Counter: number = 0 
+  {static}+<readonly> BYTE: number = 5120 {-128 到 127}
+  {static}+<readonly> UNSIGNED_BYTE: number = 5121 {0 到 255}
+  {static}+<readonly> SHORT: number = 5122 {-32,768 到 32,767}
+  {static}+<readonly> UNSIGNED_SHORT: number = 5123 {0 到 65,535}
+  {static}+<readonly> INT: number = 5124 {-2,147,483,648 到 2,147,483,647}
+  {static}+<readonly> UNSIGNED_INT: number = 5125 {0 到 4,294,967,295 }
+  {static}+<readonly> FLOAT: number = 5126 {符合 IEEE 754 标准}
+  +instanceDivisor: number {实例化除数, 一棵树几何信息不用反复读取, 直接由此除数控制间隔和复制次数, 提升渲染效率}
+  +<readonly>byteStride: number {跨距}
+  +<readonly>byteOffset: number {相对于初始位置的Offset}
+  +<readonly>normalized: boolean {int转float时是否归一化到选定范围}
+  +<readonly>type: number {数据类型}
+  +<readonly>uniqueId: number {唯一ID}
+  +<readonly>hashCode: number {哈希码}
+  +constructor(...)
+  +getKind(): string {返回顶点缓冲区类型}
+  +isUpdatable(): boolean {动态缓冲区可更新}
+  +getData(): Nullable<DataArray> {获得缓冲区内容队列}
+  +getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {以浮点数形式返回缓冲区数据，如果没有则创建}
+  +getBuffer(): Nullable<DataBuffer> {获得底层单个数据缓冲信息}
+  +getStrideSize(): number 
+  +getOffset(): number 
+  +getSize(sizeInBytes?: boolean): number 
+  +getIsInstanced(): boolean
+  +getInstanceDivisor(): number
+  +create(data?: DataArray): void
+  +update(data: DataArray): void
+  +updateDirectly(data: DataArray, offset: number, useBytes?: boolean): void
+  +dispose(): void
+  +forEach(count: number, callback: (value: number, index: number) => void): void {将顶点缓冲区的每个值枚举成数字}
+  {枚举类型}
+  {static}+<readonly>PositionKind: string = "position"
+  {static}+<readonly>NormalKind: string = "normal"
+  {static}+<readonly>TangentKind: string = "tangent" {切线}
+  {static}+<readonly>UVKind: string = "uv"
+  {static}+<readonly>UV2Kind: string = "uv2"
+  {static}+<readonly>UV3Kind: string = "uv3"
+  {static}+<readonly>UV4Kind: string = "uv4"
+  {static}+<readonly>UV5Kind: string = "uv5"
+  {static}+<readonly>UV6Kind: string = "uv6"
+  {static}+<readonly>ColorKind: string = "color"
+  {static}+<readonly>ColorInstanceKind: string = "instanceColor" {实例颜色}
+  {static}+<readonly>MatricesIndicesKind: string = "matricesIndices" {骨骼的矩阵指数}
+  {static}+<readonly>MatricesWeightsKind: string = "matricesWeights" {骨骼的矩阵权重}
+  {static}+<readonly>MatricesIndicesExtraKind: string = "matricesIndicesExtra" {骨骼的附加矩阵指数}
+  {static}+<readonly>MatricesWeightsExtraKind: string = "matricesWeightsExtra" {骨骼的附加矩阵权重}
+  {static}+DeduceStride(kind: string): number {返回特定种类的跨距}
+  {static}+GetTypeByteLength(type: number): number {返回给定种类的字节长度}
+  {static}+ForEach((value: number, index: number) => void): void {将给定参数的每个值枚举成数字}
+}
+note right of VertexBuffer
+包含了Buffer, 是更高层次的抽象, 可以更精确的控制顶点缓冲中的任何数据
+endnote
+note "Buffer和VertexBuffer有部分重叠的功能, 他们是工作在不同层面上的近似, 控制的区域互补" as N1
+Buffer .. N1 
+N1 .. VertexBuffer
+
+class StorageBuffer{
+  +constructor(engine: ThinEngine, size: number, creationFlags: number = Constants.BUFFER_CREATIONFLAG_READWRITE)
+  +_create(size: number, creationFlags: number): void 
+  +getBuffer(): DataBuffer
+  +update(data: DataArray, byteOffset?: number, byteLength?: number): void {更新}
+  +read(offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {读取}
+  +dispose(): void
+}
+note "封装, 方便读取和写入" as N3
+DataBuffer .. N3
+N3 .. StorageBuffer
+
+class UniformBuffer{
+
+}
+note right of UniformBuffer
+统一缓冲区对象UBO, 处理GPU上的某一块缓冲区, 仅支持WebGL2
+endnote
+@enduml

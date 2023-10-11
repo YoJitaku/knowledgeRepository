@@ -1,0 +1,9 @@
+@startuml Effect
+
+interface IDisposable{}
+interface IEffectCreationOptions{}
+
+class Effect implements IDisposable{
+
+}
+@enduml
