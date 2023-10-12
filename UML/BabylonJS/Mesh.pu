@@ -1,6 +1,6 @@
 @startuml Mesh
 
-class abstractMesh extends TransfomNode implements IDisposable, ICullable, IGetSetVerticesData{
+class AbstractMesh{
   {遮挡计算模式}
   {static}+OCCLUSION_TYPE_NONE: number {无}
   {static}+OCCLUSION_TYPE_OPTIMISTIC: number {乐观模式}
@@ -153,77 +153,371 @@ class abstractMesh extends TransfomNode implements IDisposable, ICullable, IGetS
   +enableEdgesRendering(...): AbstractMesh {启用}
   +getConnectedParticleSystems(): IParticleSystem[] {获取所有场景中的粒子发生器系统}
 }
-
 note right of AbstractMesh::_buildUniformLayout
 addUniform("world", 16);
 addUniform("visibility", 1);
 endnote
 
-note right of TransfomNode
-代替轴心矩阵, 用于当作Mesh在空间中的所有transform行为的中心点
-endnote
-note right of IDisposable
-场景管理中定义所有持有资源的类的释放接口
-endnote
-note right of ICullable
-定义所有可删减的对象
-endnote
-note right of IGetSetVerticesData
-定义所有可以获得和设置顶点数据类的接口
-endnote
+class Mesh extends AbstractMesh{
+  {Mesh的面朝向}
+  {static}+<readOnly>FRONTSIDE = VertexData.FRONTSIDE;
+  {static}+<readOnly>BACKSIDE = VertexData.BACKSIDE;
+  {static}+<readOnly>DOUBLESIDE = VertexData.DOUBLESIDE;
+  {static}+<readOnly>DEFAULTSIDE = VertexData.DEFAULTSIDE;
+  {Mesh的开始与结束是否有盖子, 用于封闭几何体, 圆柱等}
+  {static}+<readOnly>NO_CAP = 0
+  {static}+<readOnly>CAP_START = 1
+  {static}+<readOnly>CAP_END = 2
+  {static}+<readOnly>CAP_ALL = 3
+  {Mesh的反转和旋转模式}
+  {static}+<readOnly>NO_FLIP = 0
+  {static}+<readOnly>FLIP_TILE = 1 {Y轴行列翻转}
+  {static}+<readOnly>ROTATE_TILE = 2 {行列旋转180度}
+  {static}+<readOnly>FLIP_ROW = 3 {Y轴行翻转所有片元}
+  {static}+<readOnly>ROTATE_ROW = 4 {行旋转180度}
+  {static}+<readOnly>FLIP_N_ROTATE_TILE = 5 {翻转+旋转}
+  {static}+<readOnly>FLIP_N_ROTATE_ROW = 6 {旋转}
+  {片元附近的片元}
+  {static}+<readOnly>CENTER = 0
+  {static}+<readOnly>LEFT = 1
+  {static}+<readOnly>RIGHT = 2
+  {static}+<readOnly>TOP = 3
+  {static}+<readOnly>BOTTOM = 4
+  {static}+INSTANCEDMESH_SORT_TRANSPARENT = false {透明效果下需要打开从后向前的渲染检测}
+  -_internalMeshDataInfo: _InternalMeshDataInfo {内部数据}
+  +useLODScreenCoverage() {是否使用使用屏幕占用率(表面积比率), 而不是用距离来计算LOD等级}
+  {观察者事件}
+  +onMeshReadyObservable: Observable<Mesh> 
+  +onBeforeRenderObservable(): Observable<Mesh>
+  +onBeforeBindObservable(): Observable<Mesh>
+  +onAfterRenderObservable(): Observable<Mesh>
+  +onBetweenPassObservable(): Observable<SubMesh>
+  +onBeforeDrawObservable(): Observable<Mesh>
+  {注册Js方法}
+  +registerBeforeRender(func: (mesh: AbstractMesh) => void): Mesh
+  +unregisterBeforeRender(func: (mesh: AbstractMesh) => void): Mesh
+  +registerAfterRender(func: (mesh: AbstractMesh) => void): Mesh
+  +unregisterAfterRender(func: (mesh: AbstractMesh) => void): Mesh
+  +onBeforeDraw(callback: () => void) {更推荐使用onBeforeDrawObeservable}
+  +hasInstances(): boolean {有实例}
+  +hasThinInstances(): boolean {有薄实例}
+  +forcedInstanceCount(): number {强制显示regular/instance/thin instance mesh的个数, =0时无效, 基于Draw type正常显示}
+  +delayLoadState = Constants.DELAYLOADSTATE_NONE {延迟加载模式开启}
+  +delayLoadingFile: string; {延迟加载文件}
+  +overrideMaterialSideOrientation: Nullable<number> = null; {重写材质方向}
+  +overrideRenderingFillMode(): Nullable<number> {重写材质填充模式}
+  +overridenInstanceCount(count: number) {重写实例化数量}
+  +instances = new Array<InstancedMesh>(); {获得实例Mesh列表}
+  +cloneMeshMap(): Nullable<{ [id: string]: Mesh | undefined }> {获取克隆Mesh列表}
+  +isUnIndexed(): boolean {网格不使用索引缓冲区}
+  +ignoreCameraMaxZ = false {渲染时忽略相机最大Z值, 会和正常深度测试的Mesh列表分离渲染}
+  +constructor(...)
+  +instantiateHierarchy(...)Nullable<TransformNode> {实例化node和子结构}
+  +getClassName(): string
+  +toString(fullDetails?: boolean): string 
 
-class Mesh extends AbstractMesh implements IGetSetVerticesData{
+  {LOD}
+  +onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void; {自定义LOD加载逻辑}
+  +hasLODLevels(): boolean 
+  +getLODLevels(): MeshLODLevel[]
+  +addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>): Mesh {在给定距离处添加一个触发LOD的网格}
+  +getLODLevelAtDistance(distance: number): Nullable<Mesh> {返回所传距离处的LOD网格, 如果找不到则返回空值}
+  +removeLODLevel(mesh: Nullable<Mesh>): Mesh
+  +getLOD(camera: Camera, boundingSphere?: BoundingSphere): Nullable<AbstractMesh> {返回距离相机较远的已注册LOD网格}
+  +geometry(): Nullable<Geometry> {获取Mesh内部的几何对象}
+  +getTotalVertices(): number {顶点总数}
+  +getTotalIndices(): number {索引总数}
+  +getIndices(...): Nullable<IndicesArray> {Mesh的索引列表}
+  +getVerticesData(...): Nullable<FloatArray> {相关顶点缓冲区的内容}
+  +getVertexBuffer(...): Nullable<VertexBuffer> {根据类型返回顶点缓冲区内的单个对象}
+  +isVerticesDataPresent(...): boolean {测试Mesh是否关联了一个特定的顶点缓冲区}
+  +isVertexBufferUpdatable(...): boolean {顶点缓冲是否可更新}
+  +getVerticesDataKinds(bypassInstanceData?: boolean): string[] {返回数据种类列表}
+  +isBlocked(): boolean {遮挡}
+  +isReady(...): boolean {渲染已就绪}
+  {法线锁定}
+  +areNormalsFrozen(): boolean {更新Mesh坐标时不重新计算法线}
+  +freezeNormals(): Mesh {}
+  +unfreezeNormals(): Mesh {}
+  +refreshBoundingInfo(...): Mesh {更新包围盒信息}
+  +subdivide(count: number): void {将Mesh细分成子Mesh的组合}
+  +setVerticesData(...): AbstractMesh {设置特定的顶点缓冲区对象数据}
+  +removeVerticesData(kind: string) {删除Mesh相关的顶点缓冲区}
+  +markVerticesDataAsUpdatable(kind: string, updatable = true): void {标记顶点缓冲区可更新}
+  +setVerticesBuffer(buffer: VertexBuffer, disposeExistingBuffer = true): Mesh  {一次设置Mesh的整个顶点缓冲区}
+  +updateVerticesData(...): AbstractMesh {更新单个顶点缓冲区对象数据}
+  +updateMeshPositions(...): Mesh {更新顶点坐标数据}
+  +makeGeometryUnique(): Mesh {为Mesh创建一个非共享特定几何体}
+  +setIndices(...): AbstractMesh {设置索引缓冲}
+  +updateIndices(...): AbstractMesh {更新索引缓冲}
+  +toLeftHanded(): Mesh {右手坐标系统反转至左手坐标系统}
 
+  +render(...): Mesh {渲染主函数, 由渲染管理器调用}
+  +cleanMatrixWeights(): void {清除矩阵归一化权重, 在骨骼动画等, 每个顶点受所有骨骼影响的程度权重总和要为1, 其中有个归一化过程}
+  -private _normalizeSkinFourWeights(): void {快速4权重模式}
+  -_normalizeSkinWeightsAndExtra(): void {gltf理论上最大12个影响因子, 特殊顶点模式}
+  +validateSkinning(): { ... } {确定Mesh是否有有效的蒙皮数据和指标, 缺少权重或未归一化都会返回无效}
+  +isInFrustum(frustumPlanes: Plane[]): boolean {在视锥内}
+  +setMaterialById(id: string): Mesh {用ID设置Mesh的材质}
+  +getAnimatables(): IAnimatable[]  {返回Mesh材质/骨骼}
+  +bakeTransformIntoVertices(transform: Matrix): Mesh {用变换矩阵修改Mesh的顶点, 并建立新的缓冲区}
+  +bakeCurrentTransformIntoVertices(...): Mesh {同上, 但会重置Mesh的世界矩阵}
+  +clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh
+  +dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void
+  +applyDisplacementMap(...): Mesh {位移贴图修改Mesh的几何顶点, RBG三色梯度记录位移}
+  +applyDisplacementMapFromBuffer(...): Mesh {从位移贴图缓冲区获得, 修改Mesh的几何顶点}
+  {Flat Shading}
+  +convertToFlatShadedMesh(): Mesh {修改Mesh信息, 一般是添加顶点, 为了Flat shading}
+  +convertToUnIndexedMesh(): Mesh {移除所有索引, 添加更多的顶点到缓冲区}
+  +flipFaces(flipNormals: boolean = false): Mesh {反转片元面}
+  +increaseVertices(numberPerEdge: number = 1): void {增加片元面数和定点数, 顶点法线由原顶点法线插值得到}
+  +forceSharedVertices(): void {强制相邻片元面共享顶点, 移除所有顶点在一条线上的面}
+  +createInstance(name: string): InstancedMesh {创建新的Mesh实例化对象}
+  +synchronizeInstances(): Mesh {所有实例化Mesh的子Mesh与当前Mesh同步}
+  +optimizeIndices(successCallback?: (mesh?: Mesh) => void): Mesh {重新排列索引/优化, 不会删除重复顶点}
+  +serialize(serializationObject: any = {}): any {序列化}
+  {static}+Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {解析器}
+  {骨骼}
+  +setPositionsForCPUSkinning(): Nullable<Float32Array> {CPU骨骼计算的坐标准备}
+  +setNormalsForCPUSkinning(): Nullable<Float32Array> {CPU骨骼计算的法线准备}
+  +applySkeleton(skeleton: Skeleton): Mesh {通过应用骨骼变换, 更新顶点缓冲区}
+  {工具}
+  {static}+MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {返回包围盒在世界坐标中的最大最小值}
+  {static}+Center(meshesOrMinMaxVector: { min: Vector3; max: Vector3 } | AbstractMesh[]): Vector3  {返回包围盒在世界坐标中的中心值}
+  {static}+MergeMeshes(...): Mesh {Mesh列表合并成一个Mesh, 提升性能}
+  {static}+MergeMeshesAsync(...): Promise<Mesh> {异步版本}
 }
 
-class Geometry implements IGetSetVerticesData{
-
+class Geometry{
+  +id: string {名称}
+  +uniqueId: number {特征ID}
+  +delayLoadState: int = Constants.DELAYLOADSTATE_NONE {延迟加载模式}
+  +delayLoadingFile: string {延迟加载的文件}
+  +onGeometryUpdated: (...) => void {当几何数据发生变化时回调}
+  +boundingBias(): Vector2 {对包围元素应用偏执向量, 新的=原始+-原始*偏置.x+-偏置.y}
+  {static}+CreateGeometryForMesh(mesh: Mesh): Geometry {为Mesh添加新的空几何}
+  +meshes(): Mesh[] {利用此几何体的Mesh队列}
+  +useBoundingInfoFromGeometry = false {共用此几何体的Mesh, 将使用类级别定义, 而非根据顶点计算}
+  +constructor(...)
+  +doNotSerialize(): boolean {禁止序列化}
+  +setAllVerticesData(...): void {一次调用所有影响几何体的数据}
+  +setVerticesData(...): void {设置特定顶点数据}
+  +removeVerticesData(kind: string) {移除}
+  +setVerticesBuffer(...): void {设置顶点缓冲区}
+  +updateVerticesDataDirectly(...): void {更新特定的顶点缓冲区对象}
+  +updateVerticesData(...): void {更新整个顶点缓冲区, 如果当前为静态则会创建一个新的}
+  +getTotalVertices(): number {顶点总数}
+  +getVerticesData(...): Nullable<FloatArray> {获得特定的顶点数据}
+  +isVertexBufferUpdatable(kind: string): boolean {是否为静态}
+  +getVertexBuffer(kind: string): Nullable<VertexBuffer> {获得特定的顶点缓冲区对象}
+  +getVertexBuffers(): Nullable<{ [key: string]: VertexBuffer }> {获得整个顶点缓冲区}
+  +getVerticesDataKinds(): string[] {获得顶点数据类型的列表}
+  +isVerticesDataPresent(kind: string): boolean {是否存在特定顶点缓冲区}
+  +updateIndices(...): void {更新索引}
+  +setIndices(...): void {设置索引}
+  +getTotalIndices(): number {索引总数}
+  +getIndices(...): Nullable<IndicesArray> {获得索引数组}
+  +getIndexBuffer(): Nullable<DataBuffer> {获得索引缓冲区}
+  +releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void {释放Mesh相关的几何体资源}
+  +applyToMesh(mesh: Mesh): void {几何体应用到Mesh}
+  +load(scene: Scene, onLoaded?: () => void): void {延迟加载函数}
+  +toLeftHanded(): void {变换至左手系}
+  +isDisposed(): boolean
+  +dispose(): void
+  +copy(id: string): Geometry
+  +serialize(): any 
+  +Parse(...): Nullable<Geometry> {解析器}
+  +clearCachedData(): void {释放几何体的缓存数据}
+  +serializeVerticeData(): any {只序列化顶点数据}
+  {static}+ExtractFromMesh(mesh: Mesh, id: string): Nullable<Geometry> {提取一个几何体的克隆}
 }
-note right of Geometry
-用于存储几何体数据（顶点缓冲区 + 索引缓冲区）的类
-endnote
+VertexData -- Geometry
+VertexData -- Mesh
 
 class VertexDataMaterialInfo{
-
+  +materialIndex: number {使用的材质索引}
+  +verticesStart: number {顶点起点}
+  +verticesCount: number {顶点数量}
+  +indexStart: number {索引起点}
+  +indexCount: number {索引计数}
 }
 note right of VertexDataMaterialInfo
-材料信息绑定至顶点
+绑定至顶点数据中的材料信息
 endnote
-
+VertexDataMaterialInfo -- VertexData
 class VertexData{
-
+  {片元面的朝向}
+  {static}+<readOnly>FRONTSIDE = 0 {前/外}
+  {static}+<readOnly>BACKSIDE = 1 {后/内}
+  {static}+<readOnly>DOUBLESIDE = 2 {前后/内外}
+  {static}+<readOnly>DEFAULTSIDE = 0 {默认前/外}
+  -positions: Nullable<FloatArray> {坐标x, y, z数组排列}
+  -normals: Nullable<FloatArray> {法线同上}
+  -tangents: Nullable<FloatArray> {切线同上}
+  {uv数组u, v排列}
+  -uvs: Nullable<FloatArray>
+  -uvs2: Nullable<FloatArray>
+  -uvs3: Nullable<FloatArray>
+  -uvs4: Nullable<FloatArray>
+  -uvs5: Nullable<FloatArray>
+  -uvs6: Nullable<FloatArray>
+  -colors: Nullable<FloatArray> {颜色r, g, b, a排列}
+  {骨骼动画相关}
+  -matricesIndices: Nullable<FloatArray> {每个顶点最大四个骨骼影响因子}
+  -matricesWeights: Nullable<FloatArray> {记录计算之后的每个骨骼影响因子的权重}
+  -matricesIndicesExtra: Nullable<FloatArray> {最大8个影响因子}
+  -matricesWeightsExtra: Nullable<FloatArray> {同上, 为扩展版本}
+  -indices: Nullable<IndicesArray> {片元面的三个顶点索引i, j, k排列}
+  -materialInfos: Nullable<Array<VertexDataMaterialInfo>> {记录顶点数据中的不同部分对应的不同材质信息}
+  +uniqueId = 0 {唯一ID}
+  -metadata: any {存储上下文的值}
+  +constructor()
+  +set(data: FloatArray, kind: string) {为指定类型设置数据}
+  +applyToMesh(mesh: Mesh, updatable?: boolean): VertexData {应用顶点数据到Mesh}
+  +applyToGeometry(geometry: Geometry, updatable?: boolean): VertexData {应用顶点数据到几何体}
+  +updateMesh(mesh: Mesh): VertexData {更新mesh}
+  +updateGeometry(geometry: Geometry): VertexData {更新几何体}
+  +transform(matrix: Matrix): VertexData {变换顶点数据, 更新所有位置和法线}
+  +splitBasedOnMaterialID(): Array<VertexData> {以材质索引分离顶点数据组, 分离成每个数组都是相同的材质}
+  +merge(...) {将传入的顶点数据合并至当前顶点数据组}
+  +clone()
+  +serialize(): any
+  {static}+ExtractFromMesh(...): VertexData {从Mesh中提取顶点数据}
+  {static}+ExtractFromGeometry(...): VertexData {从几何体中提取顶点数据}
+  {工具}
+  {static}+ComputeNormals(...): void{...} {计算给定位置和索引的法线}
+  {static}+Parse(parsedVertexData: any) {解析并创建顶点数据}
+  {static}+ImportVertexData(...) {应用根据导入的几何体参数创建的顶点数据}
 }
 note right of VertexData
-定义网格上的顶点数据
+定义Mesh上单个顶点内的所有数据种类
 endnote
 
-class TrailMesh extends Mesh {}
+class TrailMesh extends Mesh {
+  +diameter: number {路径的直径/色带的宽度}
+  -_generator: TransformNode;
+  -_autoStart: boolean; {自动启动}
+  -_running: boolean; {运行中}
+  -_length: number; {长度}
+  -_sectionPolygonPointsCount: number = 4; {4个points/两个三角面/一个四边形面分一段}
+  -_sectionVectors: Array<Vector3>;  {分段总方向}
+  -_sectionNormalVectors: Array<Vector3>; {分段总法线}
+  -_beforeRenderObserver: Nullable<Observer<Scene>>; {观察事件}
+  +constructor(...)
+  +getClassName(): string
+  -_createMesh(): void {创建mesh}
+  +start(): void {开始}
+  +public stop(): void {停止}
+  +public update(): void {更新几何体}
+  +clone(...): TrailMesh
+  +serialize(serializationObject: any): void
+  {static}+Parse(parsedMesh: any, scene: Scene): TrailMesh
+}
 note right of TrailMesh
 用于创建网格走过的轨迹
 endnote
 
-class SubMesh implements ICullable{
-
+class SubMesh{
+  +materialDefines: Nullable<MaterialDefines> {获取子Mesh上Effect所需material信息}
+  +effect: Nullable<Effect> {获取相关Effect, 已存在则覆盖}
+  +setEffect(...) {设置相关的Effect}
+  +resetDrawCache(passId?: number): void {重置绘制封装的缓存}
+  -_engine: Engine
+  -_mesh: AbstractMesh
+  -_renderingMesh: Mesh
+  -_boundingInfo: BoundingInfo
+  -_linesIndexBuffer: Nullable<DataBuffer>
+  -_currentMaterial: Nullable<Material>
+  {static}+ AddToMesh(...): SubMesh {给Mesh添加一个子Mesh}
+  +constructor() {创建一个子Mesh}
+  +IsGlobal(): boolean {是否子Mesh已完全包含父Mesh}
+  +getBoundingInfo(): BoundingInfo {返回子Mesh的包围信息对象}
+  +setBoundingInfo(boundingInfo: BoundingInfo): SubMesh {设置}
+  +refreshBoundingInfo(data: Nullable<FloatArray> = null): SubMesh {设置一个新的更新过的包围信息对象给子mesh}
+  +updateBoundingInfo(world: DeepImmutable<Matrix>): SubMesh {更新包围信息}
+  +getMesh(): AbstractMesh {返回子Mesh}
+  +getRenderingMesh(): Mesh {返回渲染Mesh}
+  +getReplacementMesh(): Nullable<AbstractMesh> {返回替换网络}
+  +getEffectiveMesh(): AbstractMesh {返回有效网络}
+  +getMaterial(getDefaultMaterial = true): Nullable<Material> {返回材质}
+  +isInFrustum(frustumPlanes: Plane[]): boolean {包围盒在视锥体内}
+  +isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {完全在内, 不相交}
+  +render(enableAlphaMode: boolean): SubMesh {渲染}
+  +canIntersects(ray: Ray): boolean {是否射线和子mesh相交情况)
+  +intersects(...): Nullable<IntersectionInfo> {取射线和submesh的交点}
+  +clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh
+  +dispose(): void
+  +getClassName(): string
+  {static}+CreateFromIndices(...): SubMesh {根据索引创建submesh}
 }
 note right of SubMesh
-定义网格内的细分区域
+子网格划分<重要>管理大型网格必备
+划分出应用相同材质,纹理, 着色器等的子网络
+单独处理提高性能
+endnote
+SubMesh -- Mesh
+class GroundMesh extends Mesh{
+  +generateOctree: boolean {是否需要生成八叉树}
+  -_heightQuads: List<{ slope: Vector2, facet1: Vector4, facet2: Vector4 }>
+  +constructor(name: string, scene?: Scene)
+  +getClassName(): string 
+  +subdivisions: number {横纵细分的最小值}
+  +subdivisionsX: number {水平/横向细分}
+  +subdivisionsY: number {垂直/纵向细分}
+  +optimize(chunksCount: number, octreeBlocksSize: number = 32): void
+  +getHeightAtCoordinates(x: number, z: number): number {获得世界坐标下的高度}
+  +getNormalAtCoordinates(x: number, z: number): Vector3 {获得世界坐标下的法线}
+  +updateCoordinateHeights(): GroundMesh {更新_heightQuads}
+  -_getFacetAt(x: number, z: number): Vector4
+  -_initHeightQuads(): GroundMesh {初始化数组数据}
+  -_computeHeightQuads(): GroundMesh {计算每个submesh的值并更新_heightQuads}
+  +serialize(serializationObject: any): void
+  {static}+Parse(parsedMesh: any, scene: Scene): GroundMesh
+}
+note left of GroundMesh::_heightQuads
+储存地面Mesh的细分信息, 提供高度查询和法线查询的必要数据
+slope: Vector2表示两个三角片元之间的斜率关系/直线方程
+facet1/facet2: 同一个三角片元的两个面/空间平面方程
+endnote
+note left of GroundMesh::optimize
+划分Mesh为submesh, 并更新一个八叉树帮助正确选择submesh
+1.设置XY方向上的细分级别
+2.调用subdivide细分Mesh
+3.更新和优化八叉树, 默认八叉树Block尺寸为32, 可自定义
+endnote
+note left of GroundMesh::_getFacetAt
+获得xz位置的片元面方程
+z替代y作为列, 是因为地面网格在地上!
+通过比较斜率和z的关系决定使用哪一个面
 endnote
 
-class PolygonPoints{}
-class Polygon{}
-class PolygonMeshBuilder{}
-
-class MeshLODLevel{}
-
-class GroundMesh extends Mesh{}
-
-class GreasedLineMesh extends Mesh {}
-note right of GreasedLineMesh
-油脂线网格
-endnote
-
-class GoldbergMesh extends Mesh {}
-note right of GoldbergMesh
-戈德堡网格
-endnote
+class InstancedMesh extends AbstractMesh{
+  +constructor(name: string, source: Mesh)
+  +getClassName(): string
+  +lightSources(): Light[]
+  +receiveShadows: boolean {是否接收阴影}
+  +material: Nullable<Material> {材质}
+  +visibility: number {可见度}
+  +skeleton: Nullable<Skeleton> {骨骼}
+  +renderingGroupId: number {原Mesh的地面Mesh的ID}
+  +getTotalVertices(): number {总顶点数}
+  +getTotalIndices(): number {总索引数}
+  +sourceMesh: Mesh {原Mesh的实例}
+  +createInstance(name: string): InstancedMesh {从Mesh模型中创建实例Mesh}
+  +isReady(completeCheck: boolean = false): boolean {渲染准备完毕}
+  +getVerticesData(...): Nullable<FloatArray> {获得顶点数据}
+  +setVerticesData(...): AbstractMesh {设置顶点数据}
+  +updateVerticesData(...): Mesh {更新顶点数据}
+  +setIndices(...): Mesh {设置索引}
+  +getIndices(): Nullable<IndicesArray> {获得索引}
+  +isVerticesDataPresent(kind: string): boolean {拥有已被渲染请求的数据}
+  +_positions: Nullable<Vector3[]> {原Mesh坐标队列}
+  +refreshBoundingInfo(...): InstancedMesh {刷新包围信息}
+  +getWorldMatrix(): Matrix {世界矩阵}
+  +isAnInstance(): boolean {是否是实例}
+  +getLOD(camera: Camera): AbstractMesh {返回当前关联的LOD抽象Mesh}
+  +clone(...): InstancedMesh
+  +dispose(...): void
+  +instantiateHierarchy(...): Nullable<TransformNode> {实例化节点和子结构}
+}
 @enduml

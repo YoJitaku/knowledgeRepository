@@ -6,4 +6,5 @@ interface IEffectCreationOptions{}
 class Effect implements IDisposable{
 
 }
+
 @enduml
