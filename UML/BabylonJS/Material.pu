@@ -1,18 +1,704 @@
 @startuml material
+class Material{
+  {static}+<readonly>TriangleFillMode {实心三角形填充}
+  {static}+<readonly>WireFrameFillMode {只显示几何边框}
+  {static}+<readonly>PointFillMode {只显示几何顶点}
+  {static}+<readonly>PointListDrawMode {点列表模式, 点云, 粒子系统}
+  {static}+<readonly>LineListDrawMode {线列表模式, 两两配对, 奇数总数忽略最后一个点}
+  {static}+<readonly>LineLoopDrawMode {线循环模式, 首尾会闭合}
+  {static}+<readonly>LineStripDrawMode {线带模式, 首位不闭合}
+  {static}+<readonly>TriangleStripDrawMode {三角形带, 共享一个边}
+  {static}+<readonly>TriangleFanDrawMode {三角形扇, 共用扇顶点}
+  {static}+<readonly>ClockWiseSideOrientation {定义面朝向, 顺时针方向上的为正面}
+  {static}+<readonly>CounterClockWiseSideOrientation {逆时针方向上的为正面}
+  {脏值得Flag定义}
+  {static}+<readonly>TextureDirtyFlag 
+  {static}+<readonly>LightDirtyFlag
+  {static}+<readonly>FresnelDirtyFlag {反射和折射, 菲涅尔效应}
+  {static}+<readonly>AttributesDirtyFlag
+  {static}+<readonly>MiscDirtyFlag {杂项}
+  {static}+<readonly>PrePassDirtyFlag {渲染预通道}
+  {static}+<readonly>AllDirtyFlag {全脏}
+  {static}+<readonly>MATERIAL_OPAQUE {无透明度, 即不使用Alpha通道}
+  {static}+<readonly>MATERIAL_ALPHATEST {透明度模式, 低于Alpha阈值的像素将被丢弃}
+  {static}+<readonly>MATERIAL_ALPHABLEND {混合帧缓冲区中已绘制的像素和Alpha值得到结果}
+  {static}+<readonly>MATERIAL_ALPHATESTANDBLEND {合并上面两项, 设置阈值丢弃可提升性能}
+  {static}+<readonly>MATERIAL_NORMALBLENDMETHOD_WHITEOUT {混合法线Whiteout}
+  {static}+<readonly>MATERIAL_NORMALBLENDMETHOD_RNM {重定向法线贴图}
+  {static}+OnEventObservable = new Observable<Material>(); {能被所有材质观测的事件}
+  +customShaderNameResolve: (...) => string {自定义回调, 重写材质中使用的的默认shader}
+  +shadowDepthWrapper: Nullable<ShadowDepthWrapper> {自定义深度材质, 代替内置材质用于阴影渲染}
+  +allowShaderHotSwapping: boolean {材质是否允许shader热插拔, 即编译new shader时可以使用old shader}
+  +id: string {材质ID}
+  +uniqueId: number {设置或获取唯一的ID}
+  +name: string {材质名}
+  +metadata: any {用户定义的元数据}
+  +checkReadyOnEveryCall: boolean {每次检查ready状态}
+  +checkReadyOnlyOnce: boolean {单次检查ready状态}
+  +state: string {Material状态}
+  +canRenderToMRT: boolean {是否可通过MRT拓展为多个纹理}
+  +alpha: number {透明度}
+  +backFaceCulling: boolean {是否背面消隐}
+  +cullBackFaces: boolean {消隐正面还是背面, true是背面}
+  +blockDirtyMechanism: boolean {是否启用脏值机制, 此值变化后将被设置为脏}
+  +atomicMaterialsUpdate(...): void {自动设置脏值, 需要对材质多次更新/脏化时用}
+  +sideOrientation: number {储存材质渲染的前面/后面}
+  +onCompiled: Nullable<(effect: Effect) => void> {材质编译时的回调}
+  +onError: Nullable<(effect: Effect, errors: string) => void> {发生错误时的回调}
+  +getRenderTargetTextures: Nullable<() => SmartArray<RenderTargetTexture>> {获取渲染目标纹理的回调}
+  +hasRenderTargetTextures: boolean {是否需要注册RTT, 将场景渲染到一个纹理上，而不是直接渲染到屏幕上, 用于后期处理}
+  +doNotSerialize: boolean {是否需要序列化}
+  +animations: Nullable<Array<Animation>> {储存材质动画}
+  +onDisposeObservable: Observable<Material> {释放材料时的事件}
+  +onBindObservable: Observable<AbstractMesh> {材料绑定时触发的事件}
+  +onUnBindObservable: Observable<Material> {解绑时的事件}
+  +onEffectCreatedObservable: Observable<{ effect: Effect; subMesh: Nullable<SubMesh> }> {创建Effect时的事件}
+  +alphaMode: number {透明度模式}
+  +needDepthPrePass: boolean {需要深度预通道}
+  +isPrePassCapable: boolean {此材质是否可被预通道处理}
+  +disableDepthWrite = false {禁用深度写入}
+  +disableColorWrite = false {禁用颜色写入}
+  +forceDepthWrite = false {强制深度写入}
+  +depthFunction = 0  {使用的深度函数, 0为默认引擎函数}
+  +separateCullingPass = false {是否为裁剪单独提供一个通道, 通常在主通道中执行, 也可以单独提出到主通道之前执行}
+  +fogEnabled(value: boolean) {启用雾}
+  +pointSize = 1.0 {点大小}
+  +zOffset = 0 {z的偏移量}
+  +wireframe(): boolean {获取/设置线框模式}
+  +pointsCloud(): boolean {获取/设置点云模式}
+  +fillMode(): number {获取/设置材质的填充模式}
+  +clipPlane: Nullable<Plane>; ------clipPlane6: Nullable<Plane>; {裁剪面1-6}
+  +<readonly>stencil = new MaterialStencilState() {获取材质的模板缓冲区控制权}
+  -_useUBO: boolean = false {统一缓冲区是否启用}
+  -_scene: Scene {场景接口}
+  -_needToBindSceneUbo: boolean {是否绑定至场景统一缓冲区}
+  -_fillMode = Material.TriangleFillMode {存三角面填充模式}
+  -_cachedDepthWriteState: boolean = false {深度写入是否缓存}
+  -_cachedColorWriteState: boolean = false {颜色写入是否缓存}
+  -_cachedDepthFunctionState: number = 0 {指定深度函数是否缓存}
+  +constructor(name: string, scene?: Nullable<Scene>, doNotAdd?: boolean)
+  +toString(fullDetails?: boolean): string
+  +getClassName(): string
+  +isFrozen: boolean {指定材质的更新是否被锁}
+  +freeze(): void {锁定材质的更新}
+  +unfreeze(): void {解锁}
+  +getEffect(): Nullable<Effect> {获取Effect}
+  +getScene(): Scene {获取Scene}
+  +needAlphaBlending(): boolean {材质需要Alpha混合}
+  +needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {网格需要Alpha混合}
+  +needAlphaTesting(): boolean {材质需要Alpha测试}
+  +getAlphaTestTexture(): Nullable<BaseTexture> {获取用于Alpha测试的纹理}
+  +markDirty(forceMaterialDirty = false): void {设置为脏}
+  +bind(world: Matrix, mesh?: Mesh): void {将材质绑定到mesh}
+  +buildUniformLayout(): void {初始化统一缓冲区}
+  +bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {绑定到子Mesh}
+  +bindOnlyWorldMatrix(world: Matrix): void {将世界矩阵绑定到材质}
+  +bindView(effect: Effect): void {将视图矩阵保定到Effect}
+  +bindViewProjection(effect: Effect): void {投影矩阵绑定到Effect}
+  +bindEyePosition(effect: Effect, variableName?: string): void {将视点绑定至Effect}
+  #_afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {绑定后的处理}
+  +unbind(): void {解绑}
+  +getAnimatables(): IAnimatable[] {返回能动画的纹理队列}
+  +getActiveTextures(): BaseTexture[] {返回材质已激活的纹理}
+  +hasTexture(texture: BaseTexture): boolean {材质是否使用特定纹理}
+  +clone(name: string): Nullable<Material>
+  +getBindedMeshes(): AbstractMesh[] {获取与材质绑定的mesh}
+  +forceCompilation(...): void {强制shader编译}
+  +forceCompilationAsync(...): Promise<void>{...} {强制shader异步编译}
+  +markAsDirty(flag: number): void {标记材质为脏, 需要重新计算}
+  +resetDrawCache(): void {重置使用此材质的所有子网格缓存}
+  {submesh相关标记为脏}
+  #_markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void)
+  #_markScenePrePassDirty() {场景预处理通道}
+  #_markAllSubMeshesAsAllDirty() {submesh全内容为脏}
+  #_markAllSubMeshesAsImageProcessingDirty() {submesh相关图像处理}
+  #_markAllSubMeshesAsTexturesDirty() {submesh相关纹理}
+  #_markAllSubMeshesAsFresnelDirty() {submesh相关菲涅尔效应}
+  #_markAllSubMeshesAsFresnelAndMiscDirty() {submesh相关菲涅尔效应和杂项}
+  #_markAllSubMeshesAsLightsDirty() {submesh相关灯光}
+  #_markAllSubMeshesAsAttributesDirty() {submesh的属性}
+  #_markAllSubMeshesAsMiscDirty() {submesh的杂项}
+  #_markAllSubMeshesAsPrePassDirty() {submesh的预通道设置}
+  #_markAllSubMeshesAsTexturesAndMiscDirty() {submesh的纹理和杂项}
+  +setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {设置预渲染通道的参数}
+  +dispose(...): void {释放}
+  +serialize(): any {序列化}
+  {static}+Parse(...): Nullable<Material> {解析器}
+}
+note right of Material::PrePassDirtyFlag
+第一通道渲染关键几何体[不透明物体等], 只关心基本几何和材质, 不考虑复杂光照, 反射等
+数据捕获, 深度缓冲, 法线, 表面属性得储存
+第二通道以及后续, 高级光照, 反射, 抗锯齿等
+最终合成各个Pass/通道的结果
+后处理, 模糊, 色彩校正等, 提升图像上的效果
+-------------优势
+预通道将基本的几何, 材质信息和高级的光照, 反射效果等分开计算, 提升渲染效率
+在预通道中处理抗锯齿, 改善图像质量
+更加灵活的效果组合
+-------------劣势
+占用额外内存, 增加渲染复杂度, 主要只适用于复杂光照和高质量渲染
+endnote
+note right of Material::MATERIAL_NORMALBLENDMETHOD_WHITEOUT
+混合两张法线贴图时有多种方法
+1.Linear Blending: 线性相加平均之后归一化, 当差异性较大时会丢失细节和方向
+2.OverLay Bleding: 基于条件语句, 改善版线性. 因为独立处理通道仍会导致法线方向错误
+3.Partial Derivative Blending: (高度图的效果会好很多, 但往往不能直接用于着色)
+于是可以计算法线贴图本身导数后相加来模拟等效结果, 但仍然存在细节减弱问题
+4.Whiteout Blending: PDB的升级, 不对xy分量进行z缩放. 使细节更加明显(源自SIGGRAPH'07, AMD ruby项目)
+5.UDN Blending: (源自UDN虚幻引擎开发者)比WB节省一些shader指令, 利好低端平台, 有细节的减少, 但是视觉差异不大
+6.Detail Oriented: (即Reoriented Normal Mapping (RNM), 首次公开于GDC2012/DX11 with Unity)
+endnote
+note right of Material::MATERIAL_NORMALBLENDMETHOD_RNM
+1.基于数学逻辑: 略—写在笔记中了
+2.处理identity: 如果其中有一个法线贴图是平坦的, 则输入于另一个贴图匹配
+(flat/扁平只表面或区域法向量的方向全都相似或相同/垂直或近似垂直于表面, 即看起来贴图是平坦的没有凹凸细节)
+3.不会扁平化: 两个法线贴图的强度都得到保留, 不会因合并而丢失/扁平化
+endnote
+note right of Material::alphaMode
+ALPHA_DISABLE(值:0): 关闭 alpha,即不应用透明度效果。
+ALPHA_ADD(值:1): 透明度效果以加法方式应用，通常用于发光效果。
+ALPHA_COMBINE(值:2): 透明度效果以组合方式应用，通常用于复杂的混合效果。
+ALPHA_SUBTRACT(值:3): 透明度效果以减法方式应用，通常用于制作颜色相消效果。
+ALPHA_MULTIPLY(值:4): 透明度效果以乘法方式应用，通常用于模拟实际光照的影响。
+ALPHA_MAXIMIZED(值:5): 透明度效果被最大化，即完全透明的区域会完全消失。
+ALPHA_ONEONE(值:6): 透明度效果以一对一的方式应用，用于简单的混合效果。
+ALPHA_PREMULTIPLIED(值:7): 透明度已经预乘到颜色中，用于提高渲染效率。
+ALPHA_PREMULTIPLIED_PORTERDUFF(值:8): 使用Porter-Duff合成算法预乘透明度。
+ALPHA_INTERPOLATE(值:9): 透明度插值模式，用于渐变效果。
+ALPHA_SCREENMODE(值:10): 屏幕模式，用于创建光效。
+endnote
 
-interface IAnimatable{}
-interface IClipPlanesHolder{}
+class MultiMaterial extends Material {
+  -_subMaterials: Nullable<Material>[]
+  -_waitingSubMaterialsUniqueIds: string[]
+  +subMaterials: Nullable<Material>[]
+  +getChildren(): Nullable<Material>[]
+  +constructor(name: string, scene?: Scene)
+  -_hookArray(array: Nullable<Material>[]): void
+  +getSubMaterial(index: number): Nullable<Material>
+  +getActiveTextures(): BaseTexture[]
+  +hasTexture(texture: BaseTexture): boolean
+  +getClassName(): string
+  +isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean
+  +clone(name: string, cloneChildren?: boolean): MultiMaterial
+  +serialize(): any
+  +static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial
+  +dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, forceDisposeChildren?: boolean): void
+}
+note right of MultiMaterial
+在同一个Mesh上应用多种材质, 无需使用单独的Mesh
+提高性能: 多个SubMaterial按顺序于Mesh的SubMesh相对应
+endnote
 
-class Material implements IAnimatable, IClipPlanesHolder{
+class PushMaterial extends Material{
+  #_activeEffect: Effect {已激活的Effect}
+  #_normalMatrix: Matrix {法线矩阵: 变换法线所用到的矩阵}
+  +constructor(...)
+  +getEffect(): Effect {获取Effect}
+  +isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean
+  #_isReadyForSubMesh(subMesh: SubMesh)
+  +bindOnlyWorldMatrix(world: Matrix): void {只绑定给定世界矩阵到激活的Effect}
+  +bindOnlyNormalMatrix(normalMatrix: Matrix): void {只绑定给定法线矩阵到激活的Effect}
+  +bind(world: Matrix, mesh?: Mesh): void
+  #_afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void
+  #_mustRebind(scene: Scene, effect: Effect, visibility: number = 1)
+  +dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void
+}
+note right of PushMaterial
+材质的推送模式, 引擎内部使用
+在渲染过程中主动将材质传递给shader
+具有处理Effect, 准备Render等功能(例如绑定世界矩阵和法线矩阵到Effect等)
+endnote
+
+class ShaderMaterial extends PushMaterial{
+  -_shaderPath: any
+  -_options: IShaderMaterialOptions
+  -_textures: { [name: string]: BaseTexture }
+  -_textureArrays: { [name: string]: BaseTexture[] }
+  -_externalTextures: { [name: string]: ExternalTexture }
+  -_floats: { [name: string]: number }
+  -_ints: { [name: string]: number }
+  -_uints: { [name: string]: number }
+  -_floatsArrays: { [name: string]: number[] }
+  -_colors3: { [name: string]: Color3 }
+  -_colors3Arrays: { [name: string]: number[] }
+  -_colors4: { [name: string]: Color4 }
+  -_colors4Arrays: { [name: string]: number[] }
+  -_vectors2: { [name: string]: Vector2 }
+  -_vectors3: { [name: string]: Vector3 }
+  -_vectors4: { [name: string]: Vector4 }
+  -_quaternions: { [name: string]: Quaternion }
+  -_quaternionsArrays: { [name: string]: number[] }
+  -_matrices: { [name: string]: Matrix }
+  -_matrixArrays: { [name: string]: Float32Array | Array<number> }
+  -_matrices3x3: { [name: string]: Float32Array | Array<number> }
+  -_matrices2x2: { [name: string]: Float32Array | Array<number> }
+  -_vectors2Arrays: { [name: string]: number[] }
+  -_vectors3Arrays: { [name: string]: number[] }
+  -_vectors4Arrays: { [name: string]: number[] }
+  -_uniformBuffers: { [name: string]: UniformBuffer }
+  -_textureSamplers: { [name: string]: TextureSampler }
+  -_storageBuffers: { [name: string]: StorageBuffer }
+  -_cachedWorldViewMatrix: Matrix
+  -_cachedWorldViewProjectionMatrix: Matrix
+  -_multiview: boolean
+  -_materialHelperNeedsPreviousMatrices: boolean
+  +SnippetUrl: string {可以复用在多个shader程序中的代码块地址}
+  +snippetId: string {代码块ID, 可以实现特定的效果}
+  +constructor(...)
+  +shaderPath: any {shader代码地址, 修改地址会触发shader的重新编译}
+  +options: IShaderMaterialOptions {获取用于编译shader的选项, 修改可触发重新编译}
+  +isMultiview(): boolean {是否多视图？}
+  +getClassName(): string
+  +needAlphaBlending(): boolean {需要AB}
+  +needAlphaTesting(): boolean {需要AT}
+  +setTexture(name: string, texture: BaseTexture): ShaderMaterial 
+  +setTextureArray(name: string, textures: BaseTexture[]): ShaderMaterial
+  +setExternalTexture(name: string, texture: ExternalTexture): ShaderMaterial
+  +setFloat(name: string, value: number): ShaderMaterial
+  +setInt(name: string, value: number): ShaderMaterial
+  +setUInt(name: string, value: number): ShaderMaterial
+  +setFloats(name: string, value: number[]): ShaderMaterial
+  +setColor3(name: string, value: Color3): ShaderMaterial
+  +setColor3Array(name: string, value: Color3[]): ShaderMaterial
+  +setColor4(name: string, value: Color4): ShaderMaterial
+  +setColor4Array(name: string, value: Color4[]): ShaderMaterial
+  +setVector2(name: string, value: Vector2): ShaderMaterial
+  +setVector3(name: string, value: Vector3): ShaderMaterial
+  +setVector4(name: string, value: Vector4): ShaderMaterial
+  +setQuaternion(name: string, value: Quaternion): ShaderMaterial
+  +setQuaternionArray(name: string, value: Quaternion[]): ShaderMaterial
+  +setMatrix(name: string, value: Matrix): ShaderMaterial
+  +setMatrices(name: string, value: Matrix[]): ShaderMaterial
+  +setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial
+  +setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial
+  +setArray2(name: string, value: number[]): ShaderMaterial
+  +setArray3(name: string, value: number[]): ShaderMaterial
+  +setArray4(name: string, value: number[]): ShaderMaterial
+  +setUniformBuffer(name: string, buffer: UniformBuffer): ShaderMaterial
+  +setTextureSampler(name: string, sampler: TextureSampler): ShaderMaterial
+  +setStorageBuffer(name: string, buffer: StorageBuffer): ShaderMaterial
+  +setDefine(define: string, value: boolean | string): ShaderMaterial {添加/删除/替换指定shader的定义和值}
+  +isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean
+  +isReady(mesh?: AbstractMesh, useInstances?: boolean, subMesh?: SubMesh): boolean
+  +bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void
+  +bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void
+  +bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void
+  +getActiveTextures(): BaseTexture[]
+  +hasTexture(texture: BaseTexture): boolean
+  +clone(name: string): ShaderMaterial
+  +dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void
+  +serialize(): any
+  {static}+Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial
+  {static}+ParseFromFileAsync(...): Promise<ShaderMaterial>
+  {static}+ParseFromSnippetAsync(...): Promise<ShaderMaterial>
+}
+note right of ShaderMaterial
+将场景中的数据传送到顶点和片元着色器, 并得到一个可以应用于任何Mesh的材质
+此材质被称为shaderMaterial, 即根据不同shader得到的一个最终实际纹理
+endnote
+
+class StandardMaterial extends PushMaterial {
+  +diffuseTexture: Nullable<BaseTexture>
+  +ambientTexture: Nullable<BaseTexture>
+  +opacityTexture: Nullable<BaseTexture>
+  +reflectionTexture: Nullable<BaseTexture>
+  +emissiveTexture: Nullable<BaseTexture>
+  +specularTexture: Nullable<BaseTexture>
+  +bumpTexture: Nullable<BaseTexture>
+  +lightmapTexture: Nullable<BaseTexture>
+  +refractionTexture: Nullable<BaseTexture>
+  +ambientColor: Color3
+  +diffuseColor: Color3
+  +specularColor: Color3
+  +emissiveColor: Color3
+  +specularPower: number
+  +useAlphaFromDiffuseTexture: boolean
+  +useEmissiveAsIllumination: boolean
+  +linkEmissiveWithDiffuse: boolean
+  +useSpecularOverAlpha: boolean
+  +useReflectionOverAlpha: boolean
+  +disableLighting: boolean
+  +useObjectSpaceNormalMap: boolean
+  +useParallax: boolean
+  +useParallaxOcclusion: boolean
+  +parallaxScaleBias: number
+  +roughness: number
+  +indexOfRefraction: number
+  +invertRefractionY: boolean
+  +alphaCutOff: number
+  +useLightmapAsShadowmap: boolean
+  +diffuseFresnelParameters: FresnelParameters
+  +opacityFresnelParameters: FresnelParameters
+  +reflectionFresnelParameters: FresnelParameters
+  +refractionFresnelParameters: FresnelParameters
+  +emissiveFresnelParameters: FresnelParameters
+  +useReflectionFresnelFromSpecular: boolean
+  +useGlossinessFromSpecularMapAlpha: boolean
+  +maxSimultaneousLights: number
+  +invertNormalMapX: boolean
+  +invertNormalMapY: boolean
+  +twoSidedLighting: boolean
+  +applyDecalMapAfterDetailMap: boolean
+  +imageProcessingConfiguration: ImageProcessingConfiguration
+  #_attachImageProcessingConfiguration(...): void
+  +<readonly>prePassConfiguration: PrePassConfiguration
+  +isPrePassCapable: boolean
+  +cameraColorCurvesEnabled: boolean
+  +cameraColorGradingEnabled: boolean
+  +cameraToneMappingEnabled: boolean
+  +cameraExposure: number
+  +cameraContrast: number
+  +cameraColorGradingTexture: Nullable<BaseTexture>
+  +cameraColorCurves: Nullable<ColorCurves>
+  +canRenderToMRT()
+  +<readonly>detailMap: DetailMapConfiguration
+  #_renderTargets = new SmartArray<RenderTargetTexture>(16)
+  #_worldViewProjectionMatrix = Matrix.Zero()
+  #_globalAmbientColor = new Color3(0, 0, 0)
+  #_useLogarithmicDepth: boolean
+  #_cacheHasRenderTargetTextures = false
+  +constructor(name: string, scene?: Scene)
+  +hasRenderTargetTextures: boolean
+  +getClassName(): string
+  +useLogarithmicDepth: boolean
+  +needAlphaBlending(): boolean
+  +needAlphaTesting(): boolean
+  #_shouldUseAlphaFromDiffuseTexture(): boolean
+  #_hasAlphaChannel(): boolean
+  +getAlphaTestTexture(): Nullable<BaseTexture>
+  +isReadyForSubMesh(...): boolean
+  +buildUniformLayout(): void
+  +bindForSubMesh(...): void
+  +getAnimatables(): IAnimatable[]
+  +getActiveTextures(): BaseTexture[]
+  +hasTexture(texture: BaseTexture): boolean
+  +dispose(...): void
+  +clone(...): StandardMaterial
+  {static}+Parse(...): StandardMaterial
+  {static}+DiffuseTextureEnabled: boolean
+  {static}+DetailTextureEnabled: boolean
+  {static}+AmbientTextureEnabled: boolean
+  {static}+OpacityTextureEnabled: boolean
+  {static}+ReflectionTextureEnabled: boolean
+  {static}+EmissiveTextureEnabled: boolean
+  {static}+SpecularTextureEnabled: boolean
+  {static}+BumpTextureEnabled: boolean
+  {static}+LightmapTextureEnabled: boolean
+  {static}+RefractionTextureEnabled: boolean
+  {static}+ColorGradingTextureEnabled: boolean
+  {static}+FresnelEnabled: boolean
+}
+note right of StandardMaterial
+默认使用的材质, 质量和性能的最佳平衡
+endnote
+class BackgroundMaterial extends PushMaterial {
+  {static}+StandardReflectance0: number
+  {static}+StandardReflectance90: number
+  +primaryColor: Color3
+  +primaryColorShadowLevel: float
+  +primaryColorHighlightLevel: float
+  +reflectionTexture: BaseTexture
+  +reflectionBlur: float
+  +diffuseTexture: BaseTexture
+  +shadowLights: IShadowLight[]
+  +shadowLevel: float
+  +sceneCenter: Vector3
+  +opacityFresnel: boolean
+  +reflectionFresnel: boolean
+  +reflectionFalloffDistance: number
+  +reflectionAmount: number
+  +reflectionReflectance0: number
+  +reflectionReflectance90: number
+  +reflectionStandardFresnelWeight: number
+  +useRGBColor: boolean
+  +enableNoise: boolean
+  +fovMultiplier: number
+  +useEquirectangularFOV: boolean
+  +maxSimultaneousLights: int
+  +shadowOnly: boolean
+  +imageProcessingConfiguration: ImageProcessingConfiguration
+  +cameraColorCurvesEnabled: boolean
+  +cameraColorGradingEnabled: boolean
+  +cameraToneMappingEnabled: boolean
+  +cameraExposure: float
+  +cameraContrast: float
+  +cameraColorGradingTexture: BaseTexture
+  +cameraColorCurves: ColorCurves
+  +switchToBGR: boolean
+  -_primaryColor: Color3
+  -__perceptualColor: Nullable<Color3>
+  -_perceptualColor: Nullable<Color3>
+  -_primaryColorShadowLevel: float
+  -_primaryColorHighlightLevel: float
+  -_reflectionTexture: Nullable<BaseTexture>
+  -_reflectionBlur: float
+  -_diffuseTexture: Nullable<BaseTexture>
+  -_shadowLights: Nullable<IShadowLight[]>
+  -_shadowLevel: float
+  -_sceneCenter: Vector3
+  -_opacityFresnel: boolean
+  -_reflectionFresnel: boolean
+  -_reflectionFalloffDistance: number
+  -_reflectionAmount: number
+  -_reflectionReflectance0: number
+  -_reflectionReflectance90: number
+  -_useRGBColor: boolean
+  -_enableNoise: boolean
+  -_fovMultiplier: float
+  -_useEquirectangularFOV: boolean
+  -_maxSimultaneousLights: int
+  -_shadowOnly: boolean
+  -_imageProcessingConfiguration: ImageProcessingConfiguration
+  -_imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>
+  -_renderTargets: SmartArray<RenderTargetTexture>
+  -_reflectionControls: Vector4
+  -_white: Color3
+  -_primaryShadowColor: Color3
+  -_primaryHighlightColor: Color3
+  +constructor(name: string, scene?: Scene)
+  +hasRenderTargetTextures(): boolean
+  +needAlphaTesting(): boolean
+  +needAlphaBlending(): boolean
+  +isReadyForSubMesh(...): boolean
+  -_computePrimaryColorFromPerceptualColor(): void
+  -_computePrimaryColors(): void
+  -buildUniformLayout(): void
+  -unbind(): void
+  -bindOnlyWorldMatrix(world: Matrix): void
+  -bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void
+  +hasTexture(texture: BaseTexture): boolean
+  +dispose(...): void
+  +clone(name: string): BackgroundMaterial
+  +serialize(): any
+  +getClassName(): string
+  {static}+Parse(...): BackgroundMaterial
+}
+note right of BackgroundMaterial
+用于在场景周围创建高效的环境材质
+endnote
+
+class NodeMaterial extends PushMaterial{
 
 }
+note right of NodeMaterial
+通过连接不同的着色器块/节点来构建新的材质(自定义)
+不需要手动编写完整shader代码, 只需要组合调试已有shader即可
+endnote
 
-interface Material{}
-interface PBRBaseMaterial{}
-abstract class PBRBaseMaterial extends PushMaterial {}
-class PBRMaterial extends PBRBaseMaterial{}
-class PushMaterial extends Material{}
-interface IShaderMaterialOptions{}
-class ShaderMaterial extends PushMaterial{}
+abstract class PBRBaseMaterial extends PushMaterial {
+  {static}+<readonly>PBRMATERIAL_OPAQUE: number
+  {static}+<readonly>PBRMATERIAL_ALPHATEST: number
+  {static}+<readonly>PBRMATERIAL_ALPHABLEND: number
+  {static}+<readonly>PBRMATERIAL_ALPHATESTANDBLEND: number
+  {static}+DEFAULT_AO_ON_ANALYTICAL_LIGHTS: number
+  {static}+<readonly>LIGHTFALLOFF_PHYSICAL = 0
+  {static}+<readonly>LIGHTFALLOFF_GLTF = 1
+  {static}+<readonly>LIGHTFALLOFF_STANDARD = 2
+  +_directIntensity: number = 1.0
+  +_emissiveIntensity: number = 1.0
+  +_environmentIntensity: number = 1.0
+  +_specularIntensity: number = 1.0
+  +_lightingInfos: Vector4= new Vector4(...)
+  +_disableBumpMap: boolean = false
+  +_albedoTexture: Nullable<BaseTexture> = null
+  +_ambientTexture: Nullable<BaseTexture> = null
+  +_ambientTextureStrength: number = 1.0
+  +_ambientTextureImpactOnAnalyticalLights: number = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS
+  +_opacityTexture: Nullable<BaseTexture> = null
+  +_reflectionTexture: Nullable<BaseTexture> = null
+  +_emissiveTexture: Nullable<BaseTexture> = null
+  +_reflectivityTexture: Nullable<BaseTexture> = null
+  +_metallicTexture: Nullable<BaseTexture> = null
+  +_metallic: Nullable<number> = null
+  +_roughness: Nullable<number> = null
+  +_metallicF0Factor = 1
+  +_metallicReflectanceColor = Color3.White()
+  +_useOnlyMetallicFromMetallicReflectanceTexture = false
+  +_metallicReflectanceTexture: Nullable<BaseTexture> = null
+  +_reflectanceTexture: Nullable<BaseTexture> = null
+  +_microSurfaceTexture: Nullable<BaseTexture> = null
+  +_bumpTexture: Nullable<BaseTexture> = null
+  +_lightmapTexture: Nullable<BaseTexture> = null
+  +_ambientColor = Color3(0, 0, 0)
+  +_albedoColor = Color3(1, 1, 1)
+  +_reflectivityColor = Color3(1, 1, 1)
+  +_reflectionColor = Color3(1, 1, 1)
+  +_emissiveColor = Color3(0, 0, 0)
+  +_microSurface = 0.9
+  +_useLightmapAsShadowmap = false
+  +_useHorizonOcclusion = true
+  +_useRadianceOcclusion = true
+  +_useAlphaFromAlbedoTexture = false
+  +_useSpecularOverAlpha = true
+  +_useMicroSurfaceFromReflectivityMapAlpha = false
+  +_useRoughnessFromMetallicTextureAlpha = true
+  +_useRoughnessFromMetallicTextureGreen = false
+  +_useMetallnessFromMetallicTextureBlue = false
+  +_useAmbientOcclusionFromMetallicTextureRed = false
+  +_useAmbientInGrayScale = false
+  +_useAutoMicroSurfaceFromReflectivityMap = false
+  +_lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL
+  +_useRadianceOverAlpha = true
+  +_useObjectSpaceNormalMap = false
+  +_useParallax = false
+  +_useParallaxOcclusion = false
+  +_parallaxScaleBias = 0.05
+  +_disableLighting = false
+  +_maxSimultaneousLights = 4
+  +_invertNormalMapX = false
+  +_invertNormalMapY = false
+  +_twoSidedLighting = false
+  +_alphaCutOff = 0.4
+  +_forceAlphaTest = false
+  +_useAlphaFresnel = false
+  +_useLinearAlphaFresnel = false
+  +_environmentBRDFTexture: Nullable<BaseTexture> = null
+  +_forceIrradianceInFragment = false
+  -_realTimeFiltering: boolean = false
+  -_realTimeFilteringQuality: number = Constants.TEXTURE_FILTERING_QUALITY_LOW
+  +canRenderToMRT: boolean
+  +_forceNormalForward = false
+  +_enableSpecularAntiAliasing = false
+  #_imageProcessingConfiguration: ImageProcessingConfiguration
+  -_imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>> = null
+  #_attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void
+  -_renderTargets: SmartArray<RenderTargetTexture>
+  -_globalAmbientColor = new Color3(0, 0, 0)
+  -_useLogarithmicDepth: boolean = false
+  -_unlit = false
+  -_applyDecalMapAfterDetailMap = false
+  -_debugMode = 0
+  +debugMode: number
+  +debugLimit = -1
+  +debugFactor = 1
+  +<readonly>clearCoat: PBRClearCoatConfiguration
+  +<readonly>iridescence: PBRIridescenceConfiguration
+  +<readonly>anisotropy: PBRAnisotropicConfiguration
+  +<readonly>brdf: PBRBRDFConfiguration
+  +<readonly>sheen: PBRSheenConfiguration
+  +<readonly>subSurface: PBRSubSurfaceConfiguration
+  +<readonly>prePassConfiguration: PrePassConfiguration
+  +<readonly>detailMap: DetailMapConfiguration
+  #_cacheHasRenderTargetTextures = false
+  +constructor(name: string, scene?: Scene)
+  +hasRenderTargetTextures(): boolean
+  +isPrePassCapable(): boolean
+  +getClassName(): string
+  +useLogarithmicDepth(): boolean
+  #_disableAlphaBlending(): boolean
+  +needAlphaBlending(): boolean
+  +needAlphaTesting(): boolean
+  #_shouldUseAlphaFromAlbedoTexture(): boolean
+  #_hasAlphaChannel(): boolean
+  +getAlphaTestTexture(): Nullable<BaseTexture>
+  +isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean
+  +isMetallicWorkflow(): boolean
+  -_prepareEffect(...): Nullable<Effect>
+  -_prepareDefines(...): void
+  +forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>): void
+  +buildUniformLayout(): void
+  +bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void
+  +getAnimatables(): IAnimatable[]
+  -_getReflectionTexture(): Nullable<BaseTexture>
+  +getActiveTextures(): BaseTexture[]
+  +hasTexture(texture: BaseTexture): boolean
+  +setPrePassRenderer(): boolean
+  +dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void
+}
+note right of PBRBaseMaterial
+基于物理的PBR材质抽象基类
+endnote
 
+class PBRMaterial extends PBRBaseMaterial{
+  {static}+<readonly>PBRMATERIAL_OPAQUE
+  {static}+<readonly>PBRMATERIAL_ALPHATEST
+  {static}+<readonly>PBRMATERIAL_ALPHABLEND
+  {static}+<readonly>PBRMATERIAL_ALPHATESTANDBLEND
+  {static}+DEFAULT_AO_ON_ANALYTICAL_LIGHTS
+  +directIntensity: number = 1.0
+  +emissiveIntensity: number = 1.0
+  +environmentIntensity: number = 1.0
+  +specularIntensity: number = 1.0
+  +disableBumpMap: boolean = false
+  +albedoTexture: Nullable<BaseTexture>
+  +ambientTexture: Nullable<BaseTexture>
+  +ambientTextureStrength: number = 1.0
+  +ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS
+  +opacityTexture: Nullable<BaseTexture>
+  +reflectionTexture: Nullable<BaseTexture>
+  +emissiveTexture: Nullable<BaseTexture>
+  +reflectivityTexture: Nullable<BaseTexture>
+  +metallicTexture: Nullable<BaseTexture>
+  +metallic: Nullable<number>
+  +roughness: Nullable<number>
+  +metallicF0Factor = 1
+  +metallicReflectanceColor = Color3.White()
+  +useOnlyMetallicFromMetallicReflectanceTexture = false
+  +metallicReflectanceTexture: Nullable<BaseTexture>
+  +reflectanceTexture: Nullable<BaseTexture>
+  +microSurfaceTexture: Nullable<BaseTexture>
+  +bumpTexture: Nullable<BaseTexture>
+  +lightmapTexture: Nullable<BaseTexture>
+  +refractionTexture: Nullable<BaseTexture>
+  +ambientColor = Color3(0, 0, 0)
+  +albedoColor = Color3(1, 1, 1)
+  +reflectivityColor = Color3(1, 1, 1)
+  +reflectionColor = Color3(1.0, 1.0, 1.0)
+  +emissiveColor = Color3(0, 0, 0)
+  +microSurface = 1.0
+  +indexOfRefraction: number
+  +invertRefractionY: boolean
+  +linkRefractionWithTransparency: boolean
+  +useLightmapAsShadowmap = false
+  +useAlphaFromAlbedoTexture = false
+  +forceAlphaTest = false
+  +alphaCutOff = 0.4
+  +useSpecularOverAlpha = true
+  +useMicroSurfaceFromReflectivityMapAlpha = false
+  +useRoughnessFromMetallicTextureAlpha = true
+  +useRoughnessFromMetallicTextureGreen = false
+  +useMetallnessFromMetallicTextureBlue = false
+  +useAmbientOcclusionFromMetallicTextureRed = false
+  +useAmbientInGrayScale = false
+  +useAutoMicroSurfaceFromReflectivityMap = false
+  +usePhysicalLightFalloff: boolean
+  +useGLTFLightFalloff: boolean
+  +useRadianceOverAlpha = true
+  +useObjectSpaceNormalMap = false
+  +useParallax = false
+  +useParallaxOcclusion = false
+  +parallaxScaleBias = 0.05
+  +disableLighting = false
+  +forceIrradianceInFragment = false
+  +maxSimultaneousLights = 4
+  +invertNormalMapX = false
+  +invertNormalMapY = false
+  +twoSidedLighting = false
+  +_useAlphaFresnel = false
+  +_useLinearAlphaFresnel = false
+  +_environmentBRDFTexture: Nullable<BaseTexture> = null
+  +forceNormalForward = false
+  +enableSpecularAntiAliasing = false
+  +useHorizonOcclusion = true
+  +useRadianceOcclusion = true
+  +unlit = false
+  +applyDecalMapAfterDetailMap = false
+  +imageProcessingConfiguration: ImageProcessingConfiguration
+  +cameraColorCurvesEnabled: boolean
+  +cameraColorGradingEnabled: boolean
+  +cameraToneMappingEnabled: boolean
+  +cameraExposure: boolean
+  +cameraContrast: boolean
+  +cameraColorGradingTexture: Nullable<BaseTexture>
+  +cameraColorCurves: Nullable<ColorCurves>
+  +constructor(name: string, scene?: Scene)
+  +getClassName(): string
+  +clone(...): PBRMaterial
+  +serialize(): any 
+  {static}+Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial
+}
+note right of PBRMaterial
+基于物理的PBR材质类
+endnote
 @enduml

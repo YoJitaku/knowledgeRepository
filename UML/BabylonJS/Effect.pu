@@ -1,10 +1,143 @@
 @startuml Effect
 
-interface IDisposable{}
-interface IEffectCreationOptions{}
+interface IEffectCreationOptions{
+  {全部都跟shader有关}
+  +attributes: string[] {shader中的属性}
+  +uniformsNames: string[] {shader中的统一变量名称}
+  +uniformBuffersNames: string[] {shader种的统一缓冲区的名称}
+  +samplers: string[] {shader中的纹理采样器名字}
+  +defines: any {任何将要在shader中定义的量}
+  +fallbacks: Nullable<IEffectFallbacks> {后备功能, 在必要的时候提升性能}
+  +onCompiled: Nullable<(effect: Effect) => void> {shader编译后的回调}
+  +onError: Nullable<(effect: Effect, errors: string) => void> {错误后的回调}
+  +indexParameters?: any {自定义参数, 用于shader中的数组迭代}
+  +maxSimultaneousLights?: number {shader可用的最大灯光数量}
+  +transformFeedbackVaryings?: Nullable<string[]> {指定变量绑定至feedback缓冲区, 可在GPU中处理顶点数据}
+  +processFinalCode?: Nullable<ShaderCustomProcessingFunction> {自定义函数在GPU编译shader前更新}
+  +processCodeAfterIncludes?: Nullable<ShaderCustomProcessingFunction> {自定义函数在执行#include之后更新}
+  +multiTarget?: boolean {渲染到多个缓冲区}
+  +shaderLanguage?: ShaderLanguage {着色器语言, 默认GLSL}
+}
 
-class Effect implements IDisposable{
-
+class Effect{
+  +ShadersRepository: string {非最小化下使用Engine, 获取/设置Load Shader需要的URL}
+  +LogShaderCodeOnCompilationError: boolean {发生编译错误时, 启用Shader日志}
+  +name: any {效果名}
+  +defines: string {定义任何会设置在shader上的语句}
+  +onCompiled: Nullable<(effect: Effect) => void> {编译完成时的回调}
+  +onError: Nullable<(effect: Effect, errors: string) => void> {错误时的回调}
+  +onBind: Nullable<(effect: Effect) => void> {效果绑定时的回调}
+  +uniqueId: int {唯一ID}
+  +onCompileObservable: Observable<Effect> {编译完成事件}
+  +onErrorObservable: Observable<Effect> {错误发生事件}
+  -_isDisposed: boolean
+  +onBindObservable(): Observable<Effect> {绑定效果事件}
+  {static}-_UniqueIdSeed = 0 {计数种子}
+  {IEffectCreationOptions中有}
+  -_uniformBuffersNamesList: string[] 
+  -_uniformsNames: string[]
+  -_samplers: { [key: string]: int }
+  -_isReady: boolean
+  -_compilationError: string
+  -_allFallbacksProcessed: boolean
+  -_attributesNames: string[]
+  -_attributes: int[]
+  -_attributeLocationByName: { [name: string]: int }
+  -_uniforms: { [key: string]: Nullable<WebGLUniformLocation> }
+  {不同效果的决定项}
+  -_key: string
+  -_indexParameters: any
+  -_fallbacks: Nullable<IEffectFallbacks>
+  -_vertexSourceCodeOverride: string {顶点数据的重写}
+  -_fragmentSourceCodeOverride: string {片段数据的重写}
+  -_transformFeedbackVaryings: Nullable<string[]>
+  -_shaderLanguage: ShaderLanguage
+  {编译至WebGLprogram所需}
+  -_pipelineContext: Nullable<IPipelineContext> {管线上下文}
+  -_vertexSourceCode: string {顶点数据}
+  -_fragmentSourceCode: string {片元数据}
+  -_vertexSourceCodeBeforeMigration: string {迁移之前的代码, 迁移主要为了不同版本下的效果源代码通用}
+  -_fragmentSourceCodeBeforeMigration: string {比如OpenGL ES 2.0向3.0语法的升级}
+  -_rawVertexSourceCode: string {元数据}
+  -_rawFragmentSourceCode: string {元数据}
+  -_processingContext: Nullable<ShaderProcessingContext>
+  +constructor(...)
+  +isReady(): boolean {效果已被编译且准备就绪}
+  +getEngine(): Engine {初始化该效果的引擎}
+  +getPipelineContext(): Nullable<IPipelineContext> {该效果的管线上下文}
+  {获取shader信息}
+  +getAttributesNames(): string[] {所有属性名}
+  +getAttributeLocation(index: int): int {用索引取属性变量}
+  +getAttributeLocationByName(name: string): int {用名字取属性变量}
+  +getAttributesCount(): int {属性变量总数}
+  +getUniformIndex(uniformName: string): int {用索引取统一变量}
+  +getUniform(uniformName: string): Nullable<WebGLUniformLocation> {用名字取统一变量}
+  +getSamplers(): string[] {所有采样器名}
+  +getUniformNames(): string[]  {所有统一变量名}
+  +getUniformBuffersNames(): string[] {所有统一缓冲区变量名}
+  +getIndexParameters(): any {获得创建效果需要的其他参数索引, 例如光照等}
+  +getCompilationError(): string {获取上次保存的编译报错}
+  +allFallbacksProcessed(): boolean {是否使用所有后备方法}
+  +executeWhenCompiled(func: (effect: Effect) => void): void {为编译事件添加回调}
+  +vertexSourceCode: string {获得此效果的顶点着色文件}
+  +fragmentSourceCode: string {获得此效果的片元着色文件}
+  +vertexSourceCodeBeforeMigration: string {迁移前顶点着色源码}
+  +fragmentSourceCodeBeforeMigration: string {迁移前的片元着色源码}
+  +rawVertexSourceCode: string {顶点着色器的源源码}
+  +rawFragmentSourceCode: string {片元着色器的源源码}
+  +isSupported(): boolean {检查是否支持效果}
+  +setTexture(...): void {在引擎上设置纹理}
+  +setDepthStencilTexture(...): void {设置深度模板纹理}
+  +setTextureArray(...): void {设置纹理组}
+  +setTextureFromPostProcess(...): void {设置纹理后期处理的输入}
+  +setTextureFromPostProcessOutput(...): void {设置纹理后期处理的输出}
+  +bindUniformBuffer(buffer: DataBuffer, name: string): void {绑定缓冲区到统一变量}
+  +bindUniformBlock(blockName: string, index: number): void {绑定一个区块到统一变量}
+  +setInt(uniformName: string, value: number): Effect  {为统一变量设置单int类型}
+  +setInt2(uniformName: string, x: number, y: number): Effect {设置int类型, xy}
+  +setInt3(uniformName: string, x: number, y: number, z: number): Effect {设置int类型, xyz}
+  +setInt4(uniformName: string, x: number, y: number, z: number, w: number): Effect {设置int类型, xyzw}
+  +setIntArray(uniformName: string, array: Int32Array): Effect {设置int数组类型}
+  +setIntArray2(uniformName: string, array: Int32Array): Effect {设置int数组类型, [[1,2],[3,4]]}
+  +setIntArray3(uniformName: string, array: Int32Array): Effect {设置int数组类型, [[1,2,3],[4,5,6]]}
+  +setIntArray4(uniformName: string, array: Int32Array): Effect {设置int数组类型, [[1,2,3,4],[5,6,7,8]]}
+  +setUInt(uniformName: string, value: number): Effect {同上, 不带正负}
+  +setUInt2(uniformName: string, x: number, y: number): Effect
+  +setUInt3(uniformName: string, x: number, y: number, z: number): Effect
+  +setUInt4(uniformName: string, x: number, y: number, z: number, w: number): Effect
+  +setUIntArray(uniformName: string, array: Uint32Array): Effect {同上, 不带正负}
+  +setUIntArray2(uniformName: string, array: Uint32Array): Effect
+  +setUIntArray3(uniformName: string, array: Uint32Array): Effect
+  +setUIntArray4(uniformName: string, array: Uint32Array): Effect
+  +setFloatArray(uniformName: string, array: FloatArray): Effect {同上, 小数}
+  +setFloatArray2(uniformName: string, array: FloatArray): Effect
+  +setFloatArray3(uniformName: string, array: FloatArray): Effect
+  +setFloatArray4(uniformName: string, array: FloatArray): Effect
+  +setArray(uniformName: string, array: number[]): Effect {同上, 小数}
+  +setArray2(uniformName: string, array: number[]): Effect
+  +setArray3(uniformName: string, array: number[]): Effect
+  +setArray4(uniformName: string, array: number[]): Effect
+  +setMatrices(uniformName: string, matrices: Float32Array | number[]): Effect {设置一组矩阵到统一变量}
+  +setMatrix(uniformName: string, matrix: IMatrixLike): Effect {设置单个矩阵到统一变量}
+  +setMatrix3x3(uniformName: string, matrix: Float32Array | number[]): Effect {矩阵3*3}
+  +setMatrix2x2(uniformName: string, matrix: Float32Array | number[]): Effect {矩阵2*2}
+  +setBool(uniformName: string, bool: boolean): Effect {设置单个布尔值}
+  +setFloat(uniformName: string, value: number): Effect {设置单个浮点数}
+  +setFloat2(uniformName: string, x: number, y: number): Effect
+  +setFloat3(uniformName: string, x: number, y: number, z: number): Effect
+  +setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect
+  +setVector2(uniformName: string, vector2: IVector2Like): Effect  {设置Vector2到统一缓冲区}
+  +setVector3(uniformName: string, vector3: IVector3Like): Effect
+  +setVector4(uniformName: string, vector4: IVector4Like): Effect
+  +setQuaternion(uniformName: string, quaternion: IQuaternionLike): Effect {设置四元数到统一缓冲区}
+  +setColor3(uniformName: string, color3: IColor3Like): Effect {设置Color3到统一变量}
+  +setColor4(uniformName: string, color3: IColor3Like, alpha: number): Effect {[r,g,b], [a]分开的}
+  +setDirectColor4(uniformName: string, color4: IColor4Like): Effect {[r,g,b,a]在一起}
+  +dispose(): void 
+  {static}+RegisterShader(...): void {向shader store中添加一个新的shader}
+  {static}+ShadersStore: { [key: string]: string } {储存所有shader, 可用effect.key查询}
+  {static}+IncludesShadersStore: { [key: string]: string } {储存被包含在store供以重复使用的shader}
+  {static}+ResetCache(): void
 }
 
 @enduml

@@ -139,9 +139,6 @@ note right of IShadowLight
 问：为啥这里要有个IShadowLight接口类?
 答：架构师只负责写接口，实现则交给一线人员处理XD
 end note
-note right of IShadowLight
-未解决问题，什么是立方体纹理？
-end note
 
 abstract class ShadowLight extends Light implements IShadowLight {
   {此处省略所有在IShadowLight中定义过的接口的实现}

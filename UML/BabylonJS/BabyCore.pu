@@ -2,13 +2,60 @@
 
 Babyloncore -- Engine
 Babyloncore -- Scene
+Renderer -- Shader
+Shader -- Effect
+class Effect{
+  读GLSL到Effect对象
+  编译/报错/源代码管理
+  版本迁移...
+}
+Shader -- Material
+class Material{
+
+}
+Material -- ShaderMaterial
+Effect -- ShaderMaterial
+class ShaderMaterial{
+  由GLSL源代码生成的材质
+  可用nodeMaterial进行自由组合
+}
+Material -- StandardMaterial
+class StandardMaterial{
+  官方推荐,性能和质量的综合最优选
+}
+Material -- PBRMaterial
+class PBRMaterial{
+  基于物理的材质
+}
+Material -- BackgroundMaterial
+class BackgroundMaterial{
+  环境材质
+}
 Engine -- Event
 Scene -- Camera
+class Camera{
+  分类不好
+}
 Scene -- Light
+class Light{
+  光属性
+  光衰减
+  阴影发生器
+}
+Light -- shadowGenerator
+shadowGenerator -- ShadowDepthWrapper
+ShadowDepthWrapper -- StandardMaterial
 Scene -- Mesh
-Scene -- Skeletons
-Scene -- ParticleSystem
-Scene -- Animation
+Mesh -- Geometry
+class Mesh{
+  遮挡计算
+  视锥剔除策略
+  碰撞层
+  LOD自定义
+  SubMesh
+  实例化
+  骨骼相关
+}
 Engine -- Renderer
 Event -- Actions
 Event -- Observer

@@ -1,0 +1,221 @@
+@startuml PBRMaterial
+class PBRMaterialDefines extends MaterialDefines{
+  +PBR: boolean = true 
+  +NUM_SAMPLES: string = "0" 
+  +REALTIME_FILTERING: boolean = false {实时过滤}
+  {UV}
+  +MAINUV1: boolean = false 
+  +MAINUV2: boolean = false
+  +MAINUV3: boolean = false
+  +MAINUV4: boolean = false
+  +MAINUV5: boolean = false
+  +MAINUV6: boolean = false
+  +UV1: boolean = false
+  +UV2: boolean = false
+  +UV3: boolean = false
+  +UV4: boolean = false
+  +UV5: boolean = false
+  +UV6: boolean = false
+
+  +ALBEDO: boolean = false
+  +GAMMAALBEDO: boolean = false
+  +ALBEDODIRECTUV: number = 0
+  +VERTEXCOLOR: boolean = false
+
+  +BAKED_VERTEX_ANIMATION_TEXTURE: boolean = false
+
+  +AMBIENT: boolean = false
+  +AMBIENTDIRECTUV: number = 0
+  +AMBIENTINGRAYSCALE: boolean = false
+
+  +OPACITY: boolean = false
+  +VERTEXALPHA: boolean = false
+  +OPACITYDIRECTUV: number = 0
+  +OPACITYRGB: boolean = false
+  +ALPHATEST: boolean = false
+  +DEPTHPREPASS: boolean = false
+  +ALPHABLEND: boolean = false
+  +ALPHAFROMALBEDO: boolean = false
+  +ALPHATESTVALUE: string = "0.5"
+  +SPECULAROVERALPHA: boolean = false
+  +RADIANCEOVERALPHA: boolean = false
+  +ALPHAFRESNEL: boolean = false
+  +LINEARALPHAFRESNEL: boolean = false
+  +PREMULTIPLYALPHA: boolean = false
+
+  +EMISSIVE: boolean = false
+  +EMISSIVEDIRECTUV: number = 0
+  +GAMMAEMISSIVE: boolean = false
+
+  +REFLECTIVITY: boolean = false
+  +REFLECTIVITY_GAMMA: boolean = false
+  +REFLECTIVITYDIRECTUV: number = 0
+  +SPECULARTERM: boolean = false
+
+  +MICROSURFACEFROMREFLECTIVITYMAP: boolean = false
+  +MICROSURFACEAUTOMATIC: boolean = false
+  +LODBASEDMICROSFURACE: boolean = false
+  +MICROSURFACEMAP: boolean = false
+  +MICROSURFACEMAPDIRECTUV: number = 0
+
+  +METALLICWORKFLOW: boolean = false
+  +ROUGHNESSSTOREINMETALMAPALPHA: boolean = false
+  +ROUGHNESSSTOREINMETALMAPGREEN: boolean = false
+  +METALLNESSSTOREINMETALMAPBLUE: boolean = false
+  +AOSTOREINMETALMAPRED: boolean = false
+  +METALLIC_REFLECTANCE: boolean = false
+  +METALLIC_REFLECTANCE_GAMMA: boolean = false
+  +METALLIC_REFLECTANCEDIRECTUV: number = 0
+  +METALLIC_REFLECTANCE_USE_ALPHA_ONLY: boolean = false
+  +REFLECTANCE: boolean = false
+  +REFLECTANCE_GAMMA: boolean = false
+  +REFLECTANCEDIRECTUV: number = 0
+
+  +ENVIRONMENTBRDF: boolean = false
+  +ENVIRONMENTBRDF_RGBD: boolean = false
+
+  +NORMAL: boolean = false
+  +TANGENT: boolean = false
+  +BUMP: boolean = false
+  +BUMPDIRECTUV: number = 0
+  +OBJECTSPACE_NORMALMAP: boolean = false
+  +PARALLAX: boolean = false
+  +PARALLAXOCCLUSION: boolean = false
+  +NORMALXYSCALE: boolean = true
+
+  +LIGHTMAP: boolean = false
+  +LIGHTMAPDIRECTUV: number = 0
+  +USELIGHTMAPASSHADOWMAP: boolean = false
+  +GAMMALIGHTMAP: boolean = false
+  +RGBDLIGHTMAP: boolean = false
+
+  +REFLECTION: boolean = false
+  +REFLECTIONMAP_3D: boolean = false
+  +REFLECTIONMAP_SPHERICAL: boolean = false
+  +REFLECTIONMAP_PLANAR: boolean = false
+  +REFLECTIONMAP_CUBIC: boolean = false
+  +USE_LOCAL_REFLECTIONMAP_CUBIC: boolean = false
+  +REFLECTIONMAP_PROJECTION: boolean = false
+  +REFLECTIONMAP_SKYBOX: boolean = false
+  +REFLECTIONMAP_EXPLICIT: boolean = false
+  +REFLECTIONMAP_EQUIRECTANGULAR: boolean = false
+  +REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean = false
+  +REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED: boolean = false
+  +INVERTCUBICMAP: boolean = false
+  +USESPHERICALFROMREFLECTIONMAP: boolean = false
+  +USEIRRADIANCEMAP: boolean = false
+  +USESPHERICALINVERTEX: boolean = false
+  +REFLECTIONMAP_OPPOSITEZ: boolean = false
+  +LODINREFLECTIONALPHA: boolean = false
+  +GAMMAREFLECTION: boolean = false
+  +RGBDREFLECTION: boolean = false
+  +LINEARSPECULARREFLECTION: boolean = false
+  +RADIANCEOCCLUSION: boolean = false
+  +HORIZONOCCLUSION: boolean = false
+
+  +INSTANCES: boolean = false
+  +THIN_INSTANCES: boolean = false
+  +INSTANCESCOLOR: boolean = false
+
+  +PREPASS: boolean = false
+  +PREPASS_IRRADIANCE: boolean = false
+  +PREPASS_IRRADIANCE_INDEX: number = -1
+  +PREPASS_ALBEDO_SQRT: boolean = false
+  +PREPASS_ALBEDO_SQRT_INDEX: number = -1
+  +PREPASS_DEPTH: boolean = false
+  +PREPASS_DEPTH_INDEX: number = -1
+  +PREPASS_NORMAL: boolean = false
+  +PREPASS_NORMAL_INDEX: number = -1
+  +PREPASS_POSITION: boolean = false
+  +PREPASS_POSITION_INDEX: number = -1
+  +PREPASS_VELOCITY: boolean = false
+  +PREPASS_VELOCITY_INDEX: number = -1
+  +PREPASS_REFLECTIVITY: boolean = false
+  +PREPASS_REFLECTIVITY_INDEX: number = -1
+  +SCENE_MRT_COUNT: number = 0
+
+  +NUM_BONE_INFLUENCERS: number = 0
+  +BonesPerMesh: number = 0
+  +BONETEXTURE: boolean = false
+  +BONES_VELOCITY_ENABLED: boolean = false
+
+  +NONUNIFORMSCALING: boolean = false
+
+  +MORPHTARGETS: boolean = false
+  +MORPHTARGETS_NORMAL: boolean = false
+  +MORPHTARGETS_TANGENT: boolean = false
+  +MORPHTARGETS_UV: boolean = false
+  +NUM_MORPH_INFLUENCERS: number = 0
+  +MORPHTARGETS_TEXTURE: boolean = false
+
+  +IMAGEPROCESSING: boolean = false
+  +VIGNETTE: boolean = false
+  +VIGNETTEBLENDMODEMULTIPLY: boolean = false
+  +VIGNETTEBLENDMODEOPAQUE: boolean = false
+  +TONEMAPPING: boolean = false
+  +TONEMAPPING_ACES: boolean = false
+  +CONTRAST: boolean = false
+  +COLORCURVES: boolean = false
+  +COLORGRADING: boolean = false
+  +COLORGRADING3D: boolean = false
+  +SAMPLER3DGREENDEPTH: boolean = false
+  +SAMPLER3DBGRMAP: boolean = false
+  +DITHER: boolean = false
+  +IMAGEPROCESSINGPOSTPROCESS: boolean = false
+  +SKIPFINALCOLORCLAMP: boolean = false
+  +EXPOSURE: boolean = false
+  +MULTIVIEW: boolean = false
+  +ORDER_INDEPENDENT_TRANSPARENCY: boolean = false
+  +ORDER_INDEPENDENT_TRANSPARENCY_16BITS: boolean = false
+
+  +USEPHYSICALLIGHTFALLOFF: boolean = false
+  +USEGLTFLIGHTFALLOFF: boolean = false
+  +TWOSIDEDLIGHTING: boolean = false
+  +SHADOWFLOAT: boolean = false
+  +CLIPPLANE: boolean = false
+  +CLIPPLANE2: boolean = false
+  +CLIPPLANE3: boolean = false
+  +CLIPPLANE4: boolean = false
+  +CLIPPLANE5: boolean = false
+  +CLIPPLANE6: boolean = false
+  +POINTSIZE: boolean = false
+  +FOG: boolean = false
+  +LOGARITHMICDEPTH: boolean = false
+  +CAMERA_ORTHOGRAPHIC: boolean = false
+  +CAMERA_PERSPECTIVE: boolean = false
+
+  +FORCENORMALFORWARD: boolean = false
+
+  +SPECULARAA: boolean = false
+
+  +UNLIT: boolean = false
+
+  +DECAL_AFTER_DETAIL: boolean = false
+
+  +DEBUGMODE: number = 0
+
+  +constructor(...)
+  +reset(): void
+}
+note right of PBRMaterialDefines
+管理所有PBR材质相关的定义
+endnote
+
+interface IShaderMaterialOptions{
+  +needAlphaBlending: boolean {是否工作在Alpha混合模式下}
+  +needAlphaTesting: boolean {是否工作在Alpha测试模式下}
+  +attributes: string[] {属性变量名称列表}
+  +uniforms: string[] {统一变量名称列表}
+  +uniformBuffers: string[] {统一缓冲区名称列表}
+  +samplers: string[] {采样器名称列表}
+  +externalTextures: string[] {外部纹理名称列表}
+  +samplerObjects: string[] {采样器对象名称列表}
+  +storageBuffers: string[] {储存缓冲区名称列表, 通用计算任务/高性能计算/非渲染管线}
+  +defines: string[] {自定义列表}
+  +useClipPlane: Nullable<boolean> {是否开启裁剪平面}
+  +shaderLanguage?: ShaderLanguage {shader语言}
+}
+note right of IShaderMaterialOptions
+定义与创建shader材质相关的属性
+endnote
+@enduml

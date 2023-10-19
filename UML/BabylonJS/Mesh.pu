@@ -216,7 +216,6 @@ class Mesh extends AbstractMesh{
   +getClassName(): string
   +toString(fullDetails?: boolean): string 
 
-  {LOD}
   +onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void; {自定义LOD加载逻辑}
   +hasLODLevels(): boolean 
   +getLODLevels(): MeshLODLevel[]
@@ -235,9 +234,8 @@ class Mesh extends AbstractMesh{
   +getVerticesDataKinds(bypassInstanceData?: boolean): string[] {返回数据种类列表}
   +isBlocked(): boolean {遮挡}
   +isReady(...): boolean {渲染已就绪}
-  {法线锁定}
   +areNormalsFrozen(): boolean {更新Mesh坐标时不重新计算法线}
-  +freezeNormals(): Mesh {}
+  +freezeNormals(): Mesh {} {法线锁定}
   +unfreezeNormals(): Mesh {}
   +refreshBoundingInfo(...): Mesh {更新包围盒信息}
   +subdivide(count: number): void {将Mesh细分成子Mesh的组合}
@@ -266,7 +264,6 @@ class Mesh extends AbstractMesh{
   +dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void
   +applyDisplacementMap(...): Mesh {位移贴图修改Mesh的几何顶点, RBG三色梯度记录位移}
   +applyDisplacementMapFromBuffer(...): Mesh {从位移贴图缓冲区获得, 修改Mesh的几何顶点}
-  {Flat Shading}
   +convertToFlatShadedMesh(): Mesh {修改Mesh信息, 一般是添加顶点, 为了Flat shading}
   +convertToUnIndexedMesh(): Mesh {移除所有索引, 添加更多的顶点到缓冲区}
   +flipFaces(flipNormals: boolean = false): Mesh {反转片元面}
@@ -277,11 +274,9 @@ class Mesh extends AbstractMesh{
   +optimizeIndices(successCallback?: (mesh?: Mesh) => void): Mesh {重新排列索引/优化, 不会删除重复顶点}
   +serialize(serializationObject: any = {}): any {序列化}
   {static}+Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {解析器}
-  {骨骼}
   +setPositionsForCPUSkinning(): Nullable<Float32Array> {CPU骨骼计算的坐标准备}
   +setNormalsForCPUSkinning(): Nullable<Float32Array> {CPU骨骼计算的法线准备}
   +applySkeleton(skeleton: Skeleton): Mesh {通过应用骨骼变换, 更新顶点缓冲区}
-  {工具}
   {static}+MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {返回包围盒在世界坐标中的最大最小值}
   {static}+Center(meshesOrMinMaxVector: { min: Vector3; max: Vector3 } | AbstractMesh[]): Vector3  {返回包围盒在世界坐标中的中心值}
   {static}+MergeMeshes(...): Mesh {Mesh列表合并成一个Mesh, 提升性能}
