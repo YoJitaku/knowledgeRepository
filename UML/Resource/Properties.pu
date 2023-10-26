@@ -1,0 +1,247 @@
+@startuml SequenceParticipantBorderThickness
+class Accessor extends glTF{
+  bufferView;
+  byteOffset;
+  componentType;
+  normalized;
+  count;
+  type;
+  max;
+  min;
+  sparse;
+  name;
+  extensions;
+  extras;
+}
+class AccessorSparse extends Accessor{
+  count;
+  indices;
+  values;
+  extensions;
+  extras;
+}
+class AccessorSparseIndices extends AccessorSparse{
+  bufferView;
+  byteOffset;
+  componentType;
+  extensions;
+  extras;
+}
+class AccessorSparseValues extends AccessorSparse{
+  bufferView;
+  byteOffset;
+  extensions;
+  extras;
+}
+class Animation extends glTF{
+  channels;
+  samplers;
+  name;
+  extensions;
+  extras;
+}
+class AnimationChannel extends Animation{
+  sampler;
+  target;
+  extensions;
+  extras;
+}
+class AnimationChannelTarget extends AnimationChannel{
+  node;
+  path;
+  extensions;
+  extras;
+}
+class AnimaionSampler extends Animation{
+  input;
+  interpolation;
+  output;
+  extensions;
+  extras;
+}
+class Asset extends glTF{
+  copyright;
+  generator;
+  version;
+  minVersion;
+  extensions;
+  extras;
+}
+class Buffer extends glTF{
+  uri;
+  byteLength;
+  name;
+  extensions;
+  extras;
+}
+class BufferView extends glTF{
+  buffer;
+  byteOffset;
+  byteLength;
+  byteStride;
+  target;
+  extensions;
+  extras;
+}
+class Camera extends glTF{
+  orthographic;
+  perspective;
+  type;
+  name;
+  extensions;
+  extras;
+}
+class CameraOrthographic extends Camera{
+  xmag;
+  ymag;
+  zfar;
+  znear;
+  extensions;
+  extras;
+}
+class CameraPerspective extends Camera{
+  aspectRatio;
+  yfov;
+  zfar;
+  znear;
+  extensions;
+  extras;
+}
+class Extension extends glTF{
+  包含扩展对象的JSON对象
+}
+class Extras extends glTF{
+  自定义数据, JSON对象
+}
+class glTF{
+  extensionsUsed;
+  extensionsRequired;
+  accessors;
+  animations;
+  asset;
+  buffers;
+  bufferViews;
+  cameras;
+  images;
+  materials;
+  meshes;
+  nodes;
+  samplers;
+  scenes;
+  scene;
+  skins;
+  textures;
+  extensions;
+  extras;
+}
+class Image extends Texture{
+  uri;
+  mimeType;
+  bufferView;
+  name;
+  extensions;
+  extras;
+}
+class Material extends glTF{
+  name;
+  extensions;
+  extras;
+  pbrMetallicRoughness;
+  normalTexture;
+  occlusionTexture;
+  emissiveTexture;
+  emissiveFactor;
+  alphaMode;
+  alphaCutoff;
+  doubleSided;
+}
+class MaterialNormalTextureInfo extends Material{
+  index;
+  texCoord;
+  scale;
+  extensions;
+  extras;
+}
+class MaterialOcclusionTextureInfo extends Material{
+  index;
+  texCoord;
+  strength;
+  extensions;
+}
+class MaterialPBRMetallicRoughness extends Material{
+  baseColorFactor;
+  baseColorTexture;
+  metallicFactor;
+  roughnessFactor;
+  metallicRoughnessTexture;
+  extensions;
+  extras;
+}
+class Mesh extends glTF{
+  primitives;
+  weights;
+  name;
+  extensions;
+  extras;
+}
+class MeshPrimitive extends Mesh{
+  attributes;
+  indices;
+  material;
+  mode;
+  targets;
+  extensions;
+  extras;
+}
+class Node extends glTF{
+  camera;
+  children;
+  skin;
+  matrix;
+  mesh;
+  rotation;
+  scale;
+  translation;
+  weights;
+  name;
+  extensions;
+  extras;
+}
+class Scene extends glTF{
+  nodes;
+  name;
+  extensions;
+  extras;
+}
+class Skin extends glTF{
+  inverseBindMatrices;
+  skeleton;
+  joints;
+  name;
+  extensions;
+  extras;
+}
+class Texture extends glTF{
+  sampler;
+  source;
+  name;
+  extensions;
+  extras;
+}
+class TextureInfo extends Texture{
+  index;
+  texCoord;
+  extensions;
+  extras;
+}
+class Sampler extends Texture{
+  magFilter;
+  minFilter;
+  wrapS;
+  wrapT;
+  name;
+  extensions;
+  extras;
+}
+
+@enduml

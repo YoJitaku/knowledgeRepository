@@ -1,0 +1,31 @@
+@startuml NewConverter
+start
+:客户端任何格式;
+:上传(无压缩加速);
+partition "服务器C++,通过Cmake编译构建"{
+:文件格式判断;
+split
+:FBX;
+:旧转换器Fbs;
+:MD5加密算法;
+splitagain
+:osgb,glTF等;
+:新转换器;
+:输出glTF+扩展=boTF?;
+:Draco压缩;
+:其他加密算法？;
+endsplit
+}
+:传输(有压缩加速);
+partition "客户端引擎JS"{
+split
+:LoadFbs;
+splitagain
+:Draco解压缩;
+:LoadboTF?;
+endsplit
+:ResourceManager;
+:render;
+}
+stop
+@enduml

@@ -1,0 +1,61 @@
+@startuml glTF 2.0
+start
+:glTF2.0;
+fork
+:基础结构;
+fork
+:asset;
+fork again
+:buffers;
+fork again
+:BufferViews;
+fork again
+:nodes;
+fork again
+:scenes;
+fork again
+:accessors;
+forkend
+fork again
+:标准立方体;
+fork
+:Camera(正交/投影);
+fork again
+:Mesh;
+fork again
+:Material基础;
+fork again
+:三种储存方式;
+forkend
+fork again
+:高级Mesh;
+fork
+:MorphTarget;
+fork again
+:Mesh实例化;
+fork again
+:Skinned;
+forkend;
+fork again
+:高级Material;
+fork
+:法线贴图;
+fork again
+:遮罩贴图;
+fork again
+:环境贴图;
+fork again
+:PBRMaterial;
+fork again
+:纹理采样器(Mipmap生成器);
+forkend
+fork again
+:其他;
+fork
+:animation;
+fork again
+:extensions;
+endfork
+endfork
+stop
+@enduml
