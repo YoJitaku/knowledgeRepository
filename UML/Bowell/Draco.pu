@@ -1,0 +1,25 @@
+@startuml Draco
+start
+:安装Cmake;
+:安装eigen矩阵库;
+:安装gulrak/filesystem;
+:安装googletest;
+:安装syoyo/tinygltf;
+:最后编译Draco生成exe;
+:支持OBJ,STL,PLY的input,.drc的output;
+:-qp量化参数;
+note right
+控制精确度/压缩率
+数字0则是不损失精度。
+数字越大越精确，但多少都压缩。
+数字1，压缩率最高，精度最差。
+endnote
+:-cl压缩级别;
+note right
+控制不同的压缩算法是否启用。
+数字越大,会得到越高的压缩比(文件小),以及最慢的解压速度。
+数字0,会使用最小的压缩比(文件大)和最快的解压速度。
+默认参数位7,范围[1,10]
+endnote
+stop
+@enduml

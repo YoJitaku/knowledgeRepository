@@ -5,15 +5,26 @@ start
 partition "服务器C++,通过Cmake编译构建"{
 :文件格式判断;
 split
+:新转换器不支持同时也不是FBX;
+stop;
+splitagain
 :FBX;
 :旧转换器Fbs;
 :MD5加密算法;
 splitagain
-:osgb,glTF等;
-:新转换器;
-:输出glTF+扩展=boTF?;
+:osgb,glTF等转换器支持的格式;
+partition "新转换器"{
+while(是glTF格式?) is (不是)
+:任意格式转化为glTF;
+endwhile(是)
+:任意glTF统一转换到glb格式;
 :Draco压缩;
-:其他加密算法？;
+note right
+input: target.glb
+output: result.glb
+endnote
+}
+:加密算法;
 endsplit
 }
 :传输(有压缩加速);
@@ -22,7 +33,7 @@ split
 :LoadFbs;
 splitagain
 :Draco解压缩;
-:LoadboTF?;
+:LoadglTF;
 endsplit
 :ResourceManager;
 :render;
