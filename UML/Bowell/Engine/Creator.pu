@@ -1,0 +1,257 @@
+@startuml Creator
+:ICreator;
+floating note right: ICreator全局对象,包含所有变量和方法！！！！
+split
+:Animation;
+split
+:node;
+split again
+:camera;
+split again
+:morph;
+split again
+:...;
+endsplit
+split again
+:Ar;
+:...;
+split again
+:Audio;
+:...;
+split again
+:Basic;
+split
+:Algs算法;
+split again
+:StopWatch计时器;
+split again
+:FastArray;
+split again
+:Utils;
+split again
+:...;
+endsplit
+split again
+:Camera;
+split
+:ArcBall控制;
+:InertiaArcBall带惯性等物理效果;
+split again
+:FirstPerson控制;
+split again
+:gyro陀螺仪控制;
+split again
+:正交Camera;
+split again
+:透视Camera;
+:注视点Camera;
+endsplit
+split again 
+:Core;
+split
+:Cubemap第三方skybox;
+split again
+:深度渲染;
+split again
+:EngineCore;
+split again
+:SceneCore;
+split
+:renderList;
+split again
+:Light;
+split again
+:Environment;
+endsplit
+split again
+:WebGLCore;
+split again
+:...;
+endsplit
+split again
+:Effect;
+split again
+:Event;
+split again
+:Light;
+split
+:Directional;
+split again
+:Point;
+split again
+:Spot;
+endsplit
+:Shadow;
+split
+:DirShadow;
+split again
+:PointShadow;
+split again
+:SpotShadow;
+endsplit
+split again
+:Loader;
+:LoadingMonitor;
+split
+:cache;
+split again
+:EnvMapLoader;
+split again
+:FbsLoader;
+split
+:Animation;
+split again
+:MaterialLoader;
+split again
+:ImageLoader;
+split again
+:TextureLoader;
+split again
+:ModelLoader;
+endsplit
+split again
+:GpuPreLoad;
+split again
+:HdrLoader;
+split again
+:ObjectLoader;
+endsplit
+split again
+:Material;
+split
+:Billboard;
+split again
+:Custom;
+split again
+:Depth;
+split again
+:MaterialCapture;
+split again
+:Normal;
+split again
+:Particle;
+:ParticleDepth;
+split again
+:Multiple;
+split again
+:PBR;
+split again
+:...;
+endsplit
+split again
+:Math;
+split
+:AABB;
+split again
+:Color;
+split again
+:Matrix;
+split again
+:Vector;
+split again
+:Plane/Ray;
+split again
+:Quaternion;
+endsplit
+split again
+:Mesh;
+split
+:Basic;
+:Cone/Cylinder;
+:Cube/Sphere;
+:Lines/Plane;
+split again
+:VertexAttribute;
+:VertexBuffer;
+endsplit
+split again
+:Misc;
+split
+:Base64;
+split again
+:ColorPicker;
+split again
+:EffectViewer;
+split again
+:OutLineRenderer;
+split again
+:MeshInterSector;
+split again
+:...;
+endsplit
+split again
+:Node;
+:BaseNode;
+split
+:Billboard;
+split again
+:BoundingBox;
+split again
+:Geometry;
+split again
+:MeshNode;
+:SubMesh;
+split again
+:Model;
+split again
+:...;
+endsplit
+split again
+:Particle;
+split again
+:PassQueue后处理;
+split
+:Bloom泛光;
+split again
+:Bokeh布克模糊;
+split again
+:ChromaticAbrration色差分离;
+split again
+:ColorAdjustment色彩调整;
+:ColorBalance色彩平衡;
+split again
+:Edge;
+:EdgeND;
+split again
+:Film影视;
+split again
+:FXAA快速抗锯齿;
+:SSAA超采样抗锯齿;
+split again
+:Glitch故障;
+split again
+:Grain颗粒;
+split again
+:Sepia复古;
+split again
+:Sharpness锐化;
+split again
+:Vignette暗角;
+split again
+:...;
+endsplit
+split again
+:ShaderChunks;
+split 
+:VertexShader;
+split again
+:FragmentShader;
+endsplit
+split again
+:ShaderLibrary;
+:结构与Material模块大致相同;
+split again
+:Skeleton;
+split again
+:Texture;
+split
+:CubeMap;
+split again
+:DataTexture;
+split again
+:DepthTexture;
+split again
+:VideoTexture;
+endsplit
+endsplit
+@enduml
