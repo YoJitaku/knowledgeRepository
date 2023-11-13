@@ -1,7 +1,9 @@
-# JavaScript学习笔记
+# JavaScript 学习笔记
 
-## js基础知识
+## js 基础知识
+
 1. 书写位置
+
 ```Js
 //行内
 直接在HTML标签内部写，Vue框架(略)
@@ -22,41 +24,53 @@ alert('警示框弹出')
 </Script>
 </body>
 ```
+
 2. 语句结尾可以加;也可以不加
 3. 输入语法
+
 ```js
 //文档输出内容
-document.write('可以内含任何标签')
+document.write("可以内含任何标签");
 //页面输出(弹出对话框)
-alert('内容')
+alert("内容");
 //控制台日志
-console.log('输出语法，调试用')
+console.log("输出语法，调试用");
 ```
+
 4. 输出语法
+
 ```js
 //对话框输入
-prompt('对话框输入语句')
+prompt("对话框输入语句");
 ```
+
 5. 数据类型
+
 ```js
-   当日志出现NaN时，表示其为不正确的数学操作结果 
+   当日志出现NaN时，表示其为不正确的数学操作结果
    当日志出现Undefined时，表示变量未定义(没有值)
    可以赋值null，表示赋值了，但内容为空(内容将来添加)
 ```
+
 6. 字符串可以用``究极快速声明
 7. 模板字符串
+
 ```js
 //必须用反引号
 let age = 18
 document.write(`今年${age}`岁了)
 //从此不用+age+
 ```
+
 8. 检测数据类型
+
 ```js
 typeof x  运算符
 typeof(x) 函数
 ```
+
 9. 类型转换
+
 ```js
 prompt输入数据为string，计算需要先转换
 //隐式转换
@@ -69,23 +83,31 @@ parseInt(str) 只要整数，不会四舍五入，自动过滤字符串
 parseFloat(str) 只要字符串
 sp: parse两兄弟只会从左取，左边第一位是字母直接懵逼NaN
 ```
+
 10. 算术运算符
+
 ```js
 i = 1
 console.log(i++ + ++i + 10) = 7
 1++ + ++2 + 3
 1 + 3 + 3
 ```
+
 11. 三元运算符
+
 ```js
 条件 ？ 代码1 ： 代码2
 if ? true : false
 ```
+
 12. 作用域
+
 ```js
 函数内部变量无声明直接赋值，会被当做全局变量
 ```
+
 13. 匿名函数
+
 ```js
 //函数表达式，直接fn()，用于Web API
 let fn = function(){}
@@ -93,18 +115,24 @@ let fn = function(){}
 (func(){})();
 //立即执行的匿名函数
 ```
+
 14. 逻辑中断
+
 ```js
-console.log(false && age++)
-console.log(true || age++)
+console.log(false && age++);
+console.log(true || age++);
 //两个++都不执行
 ```
+
 15. 查对象
+
 ```js
-对象名.属性名
-对象名['属性名']
+对象名.属性名;
+对象名["属性名"];
 ```
+
 16. 对象内方法(对象外就叫函数了)
+
 ```js
 let obj = {
    uname: '德华'
@@ -113,35 +141,43 @@ let obj = {
    }
 }
 ```
+
 17. 遍历对象！！
+
 ```js
-for (let k in obj){
-   console.log(k)       //属性名
-   //k是带引号的属性名
-   console.log(obj[k])  //属性值
+for (let k in obj) {
+  console.log(k); //属性名
+  //k是带引号的属性名
+  console.log(obj[k]); //属性值
 }
 ```
-18. 内置对象Math
+
+18. 内置对象 Math
+
 ```js
 //有属性
-Math.PI
+Math.PI;
 //有方法
-Math.ceil(1.1)  //向上取整
-Math.floor(1.1) //向下取整
-Math.random()   //[0,1)
-Math.floor(Math.random() * (10 + 1))         //0-10
-Math.floor(Math.random() * (5 + 1)) + 5      //5-10
-Math.floor(Math.random() * (M - N + 1)) + N  //N-M
+Math.ceil(1.1); //向上取整
+Math.floor(1.1); //向下取整
+Math.random(); //[0,1)
+Math.floor(Math.random() * (10 + 1)); //0-10
+Math.floor(Math.random() * (5 + 1)) + 5; //5-10
+Math.floor(Math.random() * (M - N + 1)) + N; //N-M
 //全部为左闭右开
 ```
+
 19 基本数据类型和引用数据类型
+
 ```js
 //(栈中)简单数据类型，存值
 string number boolean undefined null
 //(堆中)复杂数据类型，存地址(引用)
 Object Array Date
 ```
-20. 变量声明tips
+
+20. 变量声明 tips
+
 ```js
 //声明变量const优先，需要变再改const
 //复杂数据类型可以用const定义并且修改
@@ -153,35 +189,45 @@ arr = [1,2,4]    //错误
 const obj = {}
 ·······
 ```
+
 ## APIs
+
 ### DOM/开发网页内容特效和实现用户交互
+
 Document Object Model / 文档对象模型
-1. DOM树/文档树
-将HTML文档以树状结构表现
-2. DOM对象！
-所有html标签都是对象，拥有属性和方法
-3. 获取DOM元素
+
+1. DOM 树/文档树
+   将 HTML 文档以树状结构表现
+2. DOM 对象！
+   所有 html 标签都是对象，拥有属性和方法
+3. 获取 DOM 元素
+
 ```js
 //曾经通过CSS选择器获取DOM元素
-document.querySelector('css选择器') //Get匹配的第一个元素
-document.querySelector('.类名')
+document.querySelector("css选择器"); //Get匹配的第一个元素
+document.querySelector(".类名");
 
-document.querySelectorAll('')
+document.querySelectorAll("");
 //取所有对象NodeList，返回对象合集，无法直接修改,是伪数组。
-//有长度索引但无数组方法，只能通过for遍历的方式获得对象 
+//有长度索引但无数组方法，只能通过for遍历的方式获得对象
 ```
+
 4. 操作元素内容
+
 ```js
-const 元素名 = doucument.querySelector('.box')
-元素名.innerText = '只能修改文本，不解析标签'
-元素名.innerHTML = '标签也能改'
+const 元素名 = doucument.querySelector(".box");
+元素名.innerText = "只能修改文本，不解析标签";
+元素名.innerHTML = "标签也能改";
 ```
+
 ```js
 //通过修改属性改内容，比如图片
-const img = document.querySelector('img')
-img.src = './######'
+const img = document.querySelector("img");
+img.src = "./######";
 ```
+
 5. 操作元素样式属性
+
 ```js
 const box = document.querySelector('.box')
 box.style.width = '300px' //要有css单位，是字符串
@@ -201,13 +247,17 @@ box.classList.add('active') //css中得提前准备.active
 box.classList.remove('box')
 box.classList.toggle('active') //切换,删除或添加
 ```
+
 6. 自定义属性
+
 ```js
 //HTML5新功能,data-自定义属性
 //标签中一律以data-开头
 //DOM对象中一律以dataset对象方式获取
 ```
+
 7. 定时器-间歇函数
+
 ```js
 网页中每隔一段时间需要自动执行一次，不需要手动触发
 //有两种
@@ -219,8 +269,10 @@ let timer1 = setInterval('fn()', 1000)
 //关闭
 clearInterval(id号/timer1)
 ```
+
 8. 事件监听！！(重要)
-鼠标事件
+   鼠标事件
+
 ```js
 元素对象.addEventListener('事件类型', 执行的函数)
 //三要素 源，类型，调用函数
@@ -240,23 +292,31 @@ div.addEventListener('mouseLeave', function(){###})
 mouseover/mouseout同上
 但是会触发冒泡事件
 ```
+
 焦点事件
+
 ```js
 input.addEventListener('focus', function(){###})  //焦点触发
 input.addEventListener('blur', function(){###})   //焦点失去
 ```
+
 键盘事件
+
 ```js
 input.addEventListener('keydown', func(){})
 input.addEventListener('keyup', func(){})
 ```
+
 文本事件
+
 ```js
-input.addEventListener('input', function(){
-      console.log(input.value) //用value来得到输入的值
-})
+input.addEventListener("input", function () {
+  console.log(input.value); //用value来得到输入的值
+});
 ```
+
 9. 事件对象
+
 ```js
 //一般命名为event, ev, e
 //事件监听中绑定的回调函数的第一个参数
@@ -270,7 +330,9 @@ key: 用户按下的键盘值/现在不提倡keycode
    if(e.key === 'Enter'){###}
 })
 ```
+
 10. 环境对象
+
 ```js
 即this指针，指向自己(函数的调用者)
 const btn = document.querySelector('button')
@@ -278,7 +340,9 @@ btn.addEventListener('click', func(){
    this.style.color = 'red' //点了btn自己变颜色
 })
 ```
+
 11. 回调函数
+
 ```js
 函数A作为参数传递给B函数时，不会立马执行，由B自动调用的函数
 //例1
@@ -287,31 +351,35 @@ setInterval(fn, 1000)
 //例2
 box.addEventListener('click', function(){###})
 ```
+
 12. 事件流
+
 ```js
-事件捕获,由父到子,从外到内document开始
-DOM.addEventListener(事件类型, 处理函数, true)
-事件冒泡,由子到父,从内到外
-DOM.addEventListener(事件类型, 处理函数, false/不写也可属于默认值)
+事件捕获, 由父到子, 从外到内document开始;
+DOM.addEventListener(事件类型, 处理函数, true);
+事件冒泡, 由子到父, 从内到外;
+DOM.addEventListener(事件类型, 处理函数, false / 不写也可属于默认值);
 //当一个元素触发事件时，会依次向上触发所有父级元素的同名事件
-阻止事件冒泡
-事件对象.stopPropagation() //阻止事件流传播,同时阻止捕获和冒泡
-son.addEventListener('click', function(e){
-   alert('####')
-   e.stopPropagation()
-})
-解绑事件
+阻止事件冒泡;
+事件对象.stopPropagation(); //阻止事件流传播,同时阻止捕获和冒泡
+son.addEventListener("click", function (e) {
+  alert("####");
+  e.stopPropagation();
+});
+解绑事件;
 //old
-btn.onclick = null
+btn.onclick = null;
 //new
 //匿名函数无法解绑，因为没得名字
-function fn(){}
-btm.addEventListener('click', fn)
-btn.removeEventListener('click', fn)
+function fn() {}
+btm.addEventListener("click", fn);
+btn.removeEventListener("click", fn);
 ```
+
 13. 事件委托 + 事件对象
 
 利用事件流/冒泡特性，减少元素注册次数
+
 ```js
 //给父元素注册事件，出发子元素时会自动触发父元素事件(相当于子元素也触发)
 ul.addEventListener('click', function(e){
@@ -319,54 +387,56 @@ ul.addEventListener('click', function(e){
    if( e.target.tagName === 'LI')//升级版，定位子元素名
 })
 ```
+
 14. 阻止默认行为
-事件.preventDefault;
-from.addEventListener('submit', func(e){
-   e.preventDefault;
-   //没写完,不让提交
-})
+    事件.preventDefault;
+    from.addEventListener('submit', func(e){
+    e.preventDefault;
+    //没写完,不让提交
+    })
 15. 其他事件
+
 ```js
 //页面加载事件
-window.addEventListener('load', function fn1(){//等待window所有加载，再function1
-   img.addEventListener('load',function fn2(){
-      //等待加载，然后再执行2
-   })
-})
+window.addEventListener("load", function fn1() {
+  //等待window所有加载，再function1
+  img.addEventListener("load", function fn2() {
+    //等待加载，然后再执行2
+  });
+});
 
 //DOMContentLoaded事件，只等待初始HTML文档的完全加载和解析。无需等待样式表，图像的加载
-document.addEventListener('DOMContentLoaded', function(){
-   //操作
-})
+document.addEventListener("DOMContentLoaded", function () {
+  //操作
+});
 
 //页面滚动事件scroll
-window.addEventListener('scroll', function(){})
+window.addEventListener("scroll", function () {});
 
 //页面尺寸事件
-window.addEventListener('resize', function(){}) //监听页面大小变化
-
-//得到元素的宽高，不包含边框
-.clientWidth
-.clientHeight
-
 //得到元素的宽高，包含边框
-.offsetWidth
-.offsetHeight
-内容+padding+border  
-//得到元素距离(带定位)父级元素(0,0)的offset 
-.offsetLeft
-.offsetTop
+//得到元素的宽高，不包含边框
+window.addEventListener("resize", function () {}).clientWidth.clientHeight //监听页面大小变化
+  .offsetWidth.offsetHeight;
+内容 +
+  padding +
+  //得到元素距离(带定位)父级元素(0,0)的offset
+  border.offsetLeft.offsetTop;
 ```
+
 16. 时间实例化
+
 ```js
 关键字new
 const date = new Date() //当前时间
 const date1 = new Date('2023-8-11 15.02') //指定时间用于倒计时
 date.gerFullYear()....
 ```
+
 ![](2023-08-11-15-04-12.png)
 
 时间戳
+
 ```js
 1970年01月01日开始的毫秒数,每个戳都是独特且不可回溯的
 //唯一性
@@ -378,52 +448,66 @@ date.getTime() //方法函数
 console.log(+new Date('2023-8-11 15.02')) //获得特定时间戳
 Date.now() //不需要实例,且只能得到当前时间
 ```
+
 ![](2023-08-11-15-14-37.png)
 
 17. 节点操作
+
 ```js
 DOM节点->DOM树中的每一个内容都是
 包括元素节点，属性节点，文本节点
 元素节点：body, div, Html为根节点
 ```
+
 查找节点新方法，以前是查找器，现在通过关系
+
 ```js
 //父节点
-子节点.parentNode //返回对象或null
-tip
+子节点.parentNode; //返回对象或null
+tip;
 //子节点
-父节点.childNodes //获得所有的子节点，包括文本，注释等(非常多)
-父节点.children   //属性！！获取全部元素节点，伪数组，只选亲儿子
+父节点.childNodes; //获得所有的子节点，包括文本，注释等(非常多)
+父节点.children; //属性！！获取全部元素节点，伪数组，只选亲儿子
 //兄弟节点
-this.nextElementSibling
-this.previousElementSibling
+this.nextElementSibling;
+this.previousElementSibling;
 ```
+
 增加节点
+
 ```js
 //创建
-const div = document.createElement('div')
+const div = document.createElement("div");
 //追加(父元素中最后一个)
-父元素.appendChild(div)
+父元素.appendChild(div);
 //插入(最前)
-父元素ul.insertBefore(li, ul.children[0])
+父元素ul.insertBefore(li, ul.children[0]);
 ```
+
 克隆节点
+
 ```js
-元素.cloneNode(布尔值) //默认false, 不包含子节点。true， 包含子节点全部clone
+元素.cloneNode(布尔值); //默认false, 不包含子节点。true， 包含子节点全部clone
 ```
+
 减少节点
+
 ```js
 //js中删元素必须经过父元素
-父元素.removeChild(要删除的元素)
+父元素.removeChild(要删除的元素);
 ```
-18. Mobile端事件
-触屏touch事件
+
+18. Mobile 端事件
+    触屏 touch 事件
+
 ```js
-div.addEventListener('touchstart', function(){})  //手指触摸到DOM元素时触发
-touchmove   //手指在一个DOM元素上滑动时触发
-touchend    //手指从一个DOM元素上移开时触发
+div.addEventListener("touchstart", function () {}); //手指触摸到DOM元素时触发
+touchmove; //手指在一个DOM元素上滑动时触发
+touchend; //手指从一个DOM元素上移开时触发
 ```
+
 19. 插件使用
+
 ```
 1.熟悉官网，查看功能
 2.看在线演示，找demo看符合度
@@ -431,26 +515,34 @@ touchend    //手指从一个DOM元素上移开时触发
 4.查看API文档，自行配置
 //www.swiper.com.cn
 ```
+
 ### BOM/浏览器对象模型
+
 ```js
 1.window对象是全局的，js中顶级对象(不能再高了)
 2.document,alert(),console.log()这些都是window的属性
 3.所有通过var定义在全局作用域(script中)的变量，函数都会变成window对象的属性和方法
 4.window对象下的属性和方法调用时可以省略window
 ```
+
 1. 定时器/延时函数
+
 ```js
 let timer =setTimeout(回调函数，等待的毫秒数)
 clearTimeout(timer)
 //延时函数只执行一次,间歇函数不停间歇执行除非手动清除
 ```
-2. JS执行机制
+
+2. JS 执行机制
+
 ```js
 浏览器有两个引擎
 1.渲染引擎HTML,CSS
 2.解析引擎JS(google chrome -> V8)
 ```
-3. EventLoop/事件循环/JS语言本身是单线程!!
+
+3. EventLoop/事件循环/JS 语言本身是单线程!!
+
 ```js
 HTML5提出Web Worker利用CPU计算能力允许JS脚本创建多线程，于是有了->
 同步
@@ -464,7 +556,9 @@ HTML5提出Web Worker利用CPU计算能力允许JS脚本创建多线程，于是
 并结束异步任务的等待状态->
 进入执行栈
 ```
-4. Location对象
+
+4. Location 对象
+
 ```js
 location的数据类型是对象，它拆分并保存了URL地址的各个组成部分
 1.href 获取完整URL地址，对其赋值可以用于跳转页面
@@ -473,23 +567,30 @@ location.herf = "www.####.com"
 3.hash 获取地址中的哈希值#后面的部分
 4.reload 刷新当前页面 location.reload(true) = 强制刷新
 ```
-5. navigator对象
+
+5. navigator 对象
+
 ```js
 同上，数据类型是obj，此obj记录了浏览器自身的相关信息
 1.userAgent检测浏览器版本及平台
 ```
+
 ![](2023-08-11-16-43-40.png)
 !function(){}() = +function(){}() = ~function(){}() = (function(){})();
 
-8. histroy对象
+8. histroy 对象
+
 ```js
 管理历史记录，操作浏览器后退前进等
 1.back()
 2.forward()
 3.go(参数) 可前可后 go(1) go(-1)...
 ```
+
 ## 本地存储
-1. 变量放内存里，一刷新就没了。HTML5在浏览器中新增存储模块，掉电不丢失。5M左右
+
+1. 变量放内存里，一刷新就没了。HTML5 在浏览器中新增存储模块，掉电不丢失。5M 左右
+
 ```js
 sessionStorage
 生命周期到关闭浏览器为止
@@ -503,7 +604,9 @@ localStorage.getItem(key) //key名字要加引号
 localStorage.removeItem(key)
 查看从浏览器的Application->storage->local storage
 ```
+
 2. 存储复杂数据类型
+
 ```js
 首先需要将复杂数据类型转化为JSON字符串
 const obj = {######}
@@ -512,7 +615,9 @@ localStorage.setItem('obj1', JSON.stringify(obj))
 const str = localStorage.getItem('obj')
 console.log(JSON.Parse(str))
 ```
+
 字符串拼接方法
+
 ```js
 map方法，遍历数组数据并返回新的!!数组!!
 const arr = ['red', 'blue', 'green']
@@ -534,25 +639,32 @@ console.log(arr.join('')) //连在一起
 console.log(arr.join()) //用,分割
 console.log(arr.join('.')) //用.分割
 ```
-## 正则表达式Regular Expression
-1. js中正则表达式是Obj
+
+## 正则表达式 Regular Expression
+
+1. js 中正则表达式是 Obj
 2. 通常用来查找，替换符合正则表达式的文本
 3. 验证表单，过滤敏感词(匹配，替换，提取)
+
 ```js
 ex:用户名只能包含英文字母，数字，或者下划线
 /^[a-z0-9_-]{3,16}$/
 ```
-4.语法
-```js
-const str = '学习前端，嘻嘻哈哈'
-const 变量名 = /表达式/
-const reg = /前端/ //直接写规则RegExp
-规则变量名.test(被检测的字符串) //检测是否符合，此方法有返回值
-console.log(reg.test(str)) //包含规则内表达式，则返回true
 
-规则变量名.exec(被检测字符串) //查找/检索，返回数组，没有返回null
+4.语法
+
+```js
+const str = "学习前端，嘻嘻哈哈";
+const 变量名 = /表达式/;
+const reg = /前端/; //直接写规则RegExp
+规则变量名.test(被检测的字符串); //检测是否符合，此方法有返回值
+console.log(reg.test(str)); //包含规则内表达式，则返回true
+
+规则变量名.exec(被检测字符串); //查找/检索，返回数组，没有返回null
 ```
+
 5. 元字符/特殊字符
+
 ```js
 一些具有特殊含义的字符，提高灵活性和匹配功能
 1. [a-z][a-zA-Z0-9-_]
@@ -580,16 +692,21 @@ console.log(/^哈*$/.test('哈哈'))   //true
 \s    //匹配空格(包括换行 制表 空格符 \t\r\n\v\f)
 \S    //匹配非空格
 ```
+
 5. 修饰符
+
 ```js
 /表达式/修饰符
-console.log(/a/i.test('a'))  //i = ignore 不区分大小写 
+console.log(/a/i.test('a'))  //i = ignore 不区分大小写
 //g = global 匹配所有满足表达式的结果
 
 const result = str.replace(/java/i, '前端') //把所有java换成前端,无论大小写
 ```
-## js进阶
-1. 作用域scope/ES6的新写法
+
+## js 进阶
+
+1. 作用域 scope/ES6 的新写法
+
 ```js
 1. 函数的参数也是函数内部的局部变量
 2. 有大括号的都是块作用域，都是局部情况
@@ -671,7 +788,9 @@ const getSum = (...arr) => {
 btn.addEventListener('click', () => {console.log(this)}) //this => window
 btn.addEventListener('click', function(){console.log(this)}) //this =>DOM对象
 ```
+
 2. 解构赋值
+
 ```js
 1.数组解构
 是将数组单元值批量赋值给一系列变量的简洁语法
@@ -706,7 +825,9 @@ function render({data: myData}){
 }
 render(msg) //msg对象中中有ID, 名称, 以及data数组对象
 ```
+
 3. 构造函数
+
 ```js
 创建对象的三种方式
 1.const pig = {name: 'peiki'}
@@ -723,6 +844,7 @@ const p = new Pig('peiki', 16, girl)
 p.father = peipidad //实例属性
 p.sayhi = () => {console.log('hi``')} //实例方法
 ```
+
 ```js
 内置构造函数
 基本数据类型str,num,boolean等有专门的构造函数(因为有方法),称其为包装类型
@@ -767,7 +889,9 @@ match: 查找，支持正则
 4.Number
 toFixed(1) :设置保留的小鼠位数，四舍五入，默认整数
 ```
+
 4. 面向对象(特点：封装，继承，多态)
+
 ```js
 1.构造函数的方法在创建对象时会重复进入堆，浪费内存--->原型prototype
 2.构造函数通过原型分配的函数被所有对象共享
@@ -808,9 +932,11 @@ console.log(ldh instanceof Object)
 console.log(Array instanceof Object)
 返回一个boolean值
 ```
+
 5. 高阶技巧
 
 拷贝相关
+
 ```js
 浅拷贝 //拷贝的是地址
 Object.assgin()
@@ -840,7 +966,7 @@ function deepCopy(newObj, oldObj){
    }
 }
 deepCopy(o, obj)
-//一定要先写array再写object，因为array属于object 
+//一定要先写array再写object，因为array属于object
 //只覆盖了60%的适用范围
 2.lodash
 var newObj = _.cloneDeep(oldObj)
@@ -850,7 +976,9 @@ JSON.stringify(oldObj)
 //再转换成对象
 const newObj = JSON.parse(JSON.stringify(oldObj))
 ```
+
 异常处理
+
 ```js
 1.thorw抛异常
 //抛出后程序会终止运行，配合error可以手动设置更详细的信息
@@ -873,13 +1001,15 @@ function fn() {
 3.debugger
 //加入断点
 ```
+
 开启严格模式
+
 ```js
-<script>
-   'use strict' //第一行
-</script>
+<script>'use strict' //第一行</script>
 ```
-this指针
+
+this 指针
+
 ```js
 1.普通函数的this指向 //严格模式下指向undefined
 2.箭头函数的this指向 //本身不存在this，实际上指向上一层作用域
@@ -907,7 +1037,9 @@ Math.max(...arr) //同上
 拷贝原函数，并改变其this指向
 const fun = fn.bind(obj) //从window->obj
 ```
+
 性能优化
+
 ```js
 1.debounce防抖
 //单位时间内频繁触发的事件，只执行最后一次
@@ -938,28 +1070,31 @@ function throttle(fn, t){
          }, t)
       }
    }
-   
-}
-```
-1. others
-with语句
-```js
-let qs = location.search.substring(1)
-let hostName = loaction.hostname
-let url = location.href
-//升级后
-with(location){
-   let qs = serach.substring(1)
-   let hostName = hostname
-   let url = href
+
 }
 ```
 
-## JSDoc文档注释
+1. others
+   with 语句
+
+```js
+let qs = location.search.substring(1);
+let hostName = loaction.hostname;
+let url = location.href;
+//升级后
+with (location) {
+  let qs = serach.substring(1);
+  let hostName = hostname;
+  let url = href;
+}
+```
+
+## JSDoc 文档注释
+
 ```js
 1. 开头和结尾
 /** 开头
-* 可以插入单个星号用于美观和对齐 
+* 可以插入单个星号用于美观和对齐
 * 可以插入@标签来解析特定参数的文档注释
 */ 结尾
 //放置于需要标注的函数.类.变量等成员之前
@@ -1005,13 +1140,15 @@ with(location){
 @version 当前文件的版本号
 @module 当前文件是一个AMD/CommonJS/ES6模块
 7. 内联标签
-{@link} 可以链接到其他API页面 
+{@link} 可以链接到其他API页面
 {@link #成员名} 链接到同文件其他成员
 {@link #相对源码地址#成员名} 链接到其他文件的其他成员
 8. 文档继承
 @inheritdoc 对子类成员，文档可以自动继承父类
 ```
-## Js模块导入
+
+## Js 模块导入
+
 ```js
 1. 导入整个模块
 import * as myModule from "/modules/my-module.js";
@@ -1027,14 +1164,16 @@ import { Export1 as newName1, Export2 as newName2} from "/modules/my-module.js";
 import "/modules/my-module.js";
 7. 导入默认值
 import myDefault from "/modules/my-module.js";
-import myDefault, * as myModule from "/modules/my-module.js"; 
+import myDefault, * as myModule from "/modules/my-module.js";
 8. 动态导入
 import("/modules/my-module.js").then((module) => {
   // Do something with the module.
 }); //返回一个Promise
 let module = await import("/modules/my-module.js");
 ```
-## Js模块导出
+
+## Js 模块导出
+
 ```js
 1. 命名导出
 export let name1, name2, …, nameN;
@@ -1056,14 +1195,17 @@ export { import1 as name1, import2 as name2, /* …, */ nameN } from "module-nam
 ```
 
 ## Promise
+
 ```js
-最简单例子
+最简单例子;
 const promise = createAudioFileAsync(audioSettings);
 promise.then(successCallback, failureCallback);
-简写为
+简写为;
 createAudioFileAsync(audioSettings).then(successCallback, failureCallback);
 ```
-Promise在JS中可以更好的管理异步代码
+
+Promise 在 JS 中可以更好的管理异步代码
+
 ```js
 三种状态
 1.Pending进行中
@@ -1082,36 +1224,40 @@ const promise2 = promise1.then(successCallback, failureCallback);
 简写为
 const promise2 = doSomething().then(successCallback, failureCallback);
 ```
+
 回调地狱->Promise->async/await
+
 ```js
-getData(function(data1) {
-    getMoreData(data1, function(data2) {
-        getMoreData(data2, function(data3) {
-            // ...
-        });
+getData(function (data1) {
+  getMoreData(data1, function (data2) {
+    getMoreData(data2, function (data3) {
+      // ...
     });
+  });
 });
 
 getData()
-    .then(data1 => getMoreData(data1))
-    .then(data2 => getMoreData(data2))
-    .then(data3 => {
-        // ...
-    })
-    .catch(error => {
-        // 处理错误
-    });
+  .then((data1) => getMoreData(data1))
+  .then((data2) => getMoreData(data2))
+  .then((data3) => {
+    // ...
+  })
+  .catch((error) => {
+    // 处理错误
+  });
 
 try {
-const data1 = await getData();
-const data2 = await getMoreData(data1);
-const data3 = await getMoreData(data2);
-// ...
+  const data1 = await getData();
+  const data2 = await getMoreData(data1);
+  const data3 = await getMoreData(data2);
+  // ...
 } catch (error) {
-// 处理错误
+  // 处理错误
 }
 ```
-Promise组合技/静态方法
+
+Promise 组合技/静态方法
+
 ```js
 Promise.all()
 并行操作func123，之后再进行result123
@@ -1140,33 +1286,40 @@ note:传入的对象中包含非Promise对象时，会被自动转化为Promise�
 Promise.any()
 任意一个Promise被resolved时resolved,仅在所有Promise都被Rejected时才Rejected
 ```
+
 async/await
+
 ```js
 async关键字用于声明函数是异步的
 被async标记的函数会返回一个Promise对象
 await关键字只能再被async标记的函数内部使用
 用于暂停函数的执行，等待Promise对象的执行完成
 ```
-配合try/catch捕获可能出现的错误
+
+配合 try/catch 捕获可能出现的错误
+
 ```js
 async function getData() {
-    try {
-        const response = await fetch('https://api.example.com/data');
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching data:', error);
-    }
+  try {
+    const response = await fetch("https://api.example.com/data");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
 }
 
 getData();
 ```
-## function*
-1. function* 是Generator Function(生成器函数)的声明方式
-2. 调用生成器函数并不会立即执行，而是返回一个Generator(迭代器)对象，当Generaator.next()方法被调用时，语句开始执行直到yield的位置，然后返回一个值value
-2. next.()整体返回一个对象(value, done)即(yield表达式的返回值，Boolean确认之后区域是否还有yield语句)
-3. 主要特点是在运行时能暂停，之后还能从暂停处继续执行
-4. yield*写法会将执行权移交给另一个Generator Function(当前暂停)
+
+## function\*
+
+1. function\* 是 Generator Function(生成器函数)的声明方式
+2. 调用生成器函数并不会立即执行，而是返回一个 Generator(迭代器)对象，当 Generaator.next()方法被调用时，语句开始执行直到 yield 的位置，然后返回一个值 value
+3. next.()整体返回一个对象(value, done)即(yield 表达式的返回值，Boolean 确认之后区域是否还有 yield 语句)
+4. 主要特点是在运行时能暂停，之后还能从暂停处继续执行
+5. yield\*写法会将执行权移交给另一个 Generator Function(当前暂停)
+
 ```js
 在函数体中可以使用yield关键字返回一系列的值，而不是只有一个Return
 function* simpleGenerator() {
@@ -1185,4 +1338,40 @@ console.log(generator.next()); // { value: undefined, done: true }
 //！！注意！！
 GeneratorFunc是惰性的，只有next()调用时才会执行属于下一块yield的代码
 ```
-###
+
+## JS 二进制读写
+
+### 1.创建一个内存区域
+
+```js
+let buffer = new ArrayBuffer();
+//这个指向的内存长度是 0 字节，无意义
+let buffer = new ArrayBuffer(8);
+//指向/定义 8 字节长度的内存
+//但是这八个位置存的都是undefined
+```
+
+### 2.八大金刚
+
+![Alt text](image-4.png)
+
+```js
+Int8Array：8位有符号整数，1个字节长度。
+Uint8Array：8位无符号整数，1个字节长度。
+Int16Array：16位有符号整数，2个字节长度。
+Uint16Array：16位无符号整数，2个字节长度。
+Int32Array：32位有符号整数，4个字节长度。
+Uint32Array：32位无符号整数，4个字节长度。
+Float32Array：32位浮点数， 4个字节长度。
+Float64Array：64位浮点数，8个字节长度。
+
+通过 Array 做中介进行数据交换
+let int8Array = new Int8Array(buffer);
+int8Array[0-7] = 读写Buffer0-7位数据
+
+8位Buffer配16位Array时
+let int16Array = new Int16Array(buffer);
+两个字节长度即16位01数据组合成的十进制数将被转换成整数
+```
+
+![Alt text](image-5.png)
