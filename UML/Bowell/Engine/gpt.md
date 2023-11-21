@@ -192,26 +192,6 @@ _collectImp: function(node){
 ```
 
 ```js
-addChild: function(node){
-  if(node === this){
-    return this;
-  }
-  if(!(node instanceof ic.BaseNode)){
-    window.console.warn("BaseNode.addChild must accept the argument typed of ICreator.BaseNode!", node);
-    return;
-  }
-  if(node._parent !== null){
-    node._parent.removeChild(node);
-  }
-  node._parent = this;
-  node._markWorldDirty();
-  this._children.push(node);
-  this._notifyHierarchyDirty(true);
-  return this;
-}
-```
-
-```js
 var asset = {
   model: model,
   animations: animations,
@@ -1256,5 +1236,77 @@ ic.DepthRenderer = DepthRenderer;
 ```
 
 ```js
+var BaseNode = function (name) {
+  this.subHierarchyVersion = 0;
+};
+BaseNode.prototype = {
+  _notifyHierarchyDirty: function (includeSelf) {
+    if (includeSelf) {
+      this.subHierarchyVersion++;
+    }
+    this.iterateUp(function (parent) {
+      parent.subHierarchyVersion++;
+    });
+  },
+  addChild: function (node) {
+    if (node === this) {
+      return this;
+    }
+    if (!(node instanceof ic.BaseNode)) {
+      window.console.warn(
+        "BaseNode.addChild must accept the argument typed of ICreator.BaseNode!",
+        node
+      );
+      return;
+    }
+    if (node._parent !== null) {
+      node._parent.removeChild(node);
+    }
+    node._parent = this;
+    node._markWorldDirty();
+    this._children.push(node);
+    this._notifyHierarchyDirty(true);
+    return this;
+  },
+  removeChildren: function () {
+    for (var i = 0; i < this._children.lengthl; i++) {
+      this._children[i]._parent = null;
+    }
+    this._children = [];
+    this._notifyHierarchyDirty(true);
+  },
+  removeChild: function (node) {
+    if (arguments.length > 1) {
+      for (var i = 0; i < arguments.length; i++) {
+        this.removeChild(arguments[i]);
+      }
+    }
+    var index = this._children.indexOf(node);
+    if (index !== -1) {
+      node._parent = null;
+      this._children.splice(index, 1);
+    }
+    this._notifyHierarchyDirty(true);
+  },
+};
+```
 
+```js
+ic.objectAssign =
+  Object.assign ||
+  function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+    return target;
+  };
+ic.inheritPrototype = function (base, map, propertyDescs) {
+  var prototype = Object.create(base.prototype, propertyDescs);
+  return this.objectAssign(prototype, map);
+};
 ```

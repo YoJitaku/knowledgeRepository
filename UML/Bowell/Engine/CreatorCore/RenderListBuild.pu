@@ -1,7 +1,7 @@
 @startuml RenderListBuild
 start
-:Scene场景管理中;
-:_root场景根节点;
+:Scene场景管理;
+:_root场景根节点(BaseNode类);
 :collect();
 :collectImp();
 stop

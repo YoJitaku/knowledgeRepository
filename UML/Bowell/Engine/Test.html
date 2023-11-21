@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test</title>
+</head>
+
+<body>
+  <script>
+    // 定义 BaseNode 类
+    var BaseNode=function(name) {
+      this.name=name;
+      this.subHierarchyVersion=0;
+      this._parent=null; // 父节点
+      this._children=[]; // 子节点
+    };
+
+    BaseNode.prototype={
+      _notifyHierarchyDirty: function(includeSelf) {
+        if(includeSelf) {
+          this.subHierarchyVersion++;
+        }
+        this.iterateUp(function(parent) {
+          parent.subHierarchyVersion++;
+        });
+      },
+
+      addChild: function(node) {
+        if(node===this) {
+          return this;
+        }
+        if(!(node instanceof BaseNode)) {
+          console.warn("BaseNode.addChild must accept the argument typed of BaseNode!",node);
+          return;
+        }
+        if(node._parent!==null) {
+          node._parent.removeChild(node);
+        }
+        node._parent=this;
+        node._markWorldDirty();
+        this._children.push(node);
+        this._notifyHierarchyDirty(true);
+        return this;
+      },
+
+      removeChild: function(node) {
+        var index=this._children.indexOf(node);
+        if(index!==-1) {
+          node._parent=null;
+          this._children.splice(index,1);
+        }
+        this._notifyHierarchyDirty(true);
+      },
+
+      _markWorldDirty: function() {
+        // 假设有其他的逻辑操作
+      },
+
+      iterateUp: function(callback) {
+        var parent=this._parent;
+        while(parent) {
+          if(callback(parent)===false) {
+            break;
+          }
+          parent=parent._parent;
+        }
+      }
+    };
+
+    // 创建节点
+    var root=new BaseNode("Root");
+    var child1=new BaseNode("Child1");
+    var child2=new BaseNode("Child2");
+
+    // 构建层次结构
+    root.addChild(child1);
+    root.addChild(child2);
+
+    // 输出初始状态
+    console.log("Initial State:");
+    console.log("Root subHierarchyVersion:",root.subHierarchyVersion);
+    console.log("Child1 subHierarchyVersion:",child1.subHierarchyVersion);
+    console.log("Child2 subHierarchyVersion:",child2.subHierarchyVersion);
+
+    // 添加子节点，触发层次结构变化
+    child1.addChild(new BaseNode("Grandchild"));
+
+    // 输出变化后的状态
+    console.log("\nState After Adding Grandchild:");
+    console.log("Root subHierarchyVersion:",root.subHierarchyVersion);
+    console.log("Child1 subHierarchyVersion:",child1.subHierarchyVersion);
+    console.log("Child2 subHierarchyVersion:",child2.subHierarchyVersion);
+ 
+    root.removeChild(child2);
+    // 输出变化后的状态
+    console.log("\nState After AfterAfterAfter Adding Grandchild:");
+    console.log("Root subHierarchyVersion:",root.subHierarchyVersion);
+    console.log("Child1 subHierarchyVersion:",child1.subHierarchyVersion);
+    console.log("Child2 subHierarchyVersion:",child2.subHierarchyVersion);
+
+ </script>
+</body>
+
+</html>

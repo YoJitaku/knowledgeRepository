@@ -1,0 +1,21 @@
+@startuml Node
+start
+:BaseNode;
+split
+:MeshNode;
+split
+:BillBoard;
+split again
+:BoundingBox;
+split again
+:Helper;
+:NormalHelper;
+:SkeletonHelper;
+split again
+:SkyBox;
+endsplit
+split again
+:ModelNode;
+endsplit
+stop
+@enduml
