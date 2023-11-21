@@ -1,0 +1,10 @@
+@startuml Scene
+start
+:AttachLoader载入模型;
+:Global.Scene.addNode(资源.model);
+note right
+
+endnote
+:BaseNode.addChild(model);
+stop
+@enduml

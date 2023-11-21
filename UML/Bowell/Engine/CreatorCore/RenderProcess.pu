@@ -1,0 +1,52 @@
+@startuml RenderProcess
+start
+group 渲染入口和准备工作
+:获取渲染对象列表;
+:遍历所有渲染对象分类;
+note right 
+不透明
+透明
+反射
+折射
+endnote
+:点光源平行光源生成阴影贴图;
+:不透明物体排序;
+:透明物体排序;
+:处理反射物体;
+note left
+透明和不透明物体都能反射
+就看带不带反射表示
+endnote
+:处理折射物体;
+note right
+只有透明物体可以启用折射
+此处代码还未完成,等一个糕手
+endnote
+endgroup
+group 具体渲染进程
+:单个渲染目标绑定之webGL引擎;
+:启用画布清除;
+split
+:没渲染深度图;
+:就按背景色设置;
+split again
+:渲染深度图;
+:设置纯白清除;
+note right
+深度图以灰度图形式表示
+白色无限远离相机
+黑色越深距离相机越近
+渲染的就是黑色
+endnote
+endsplit
+:不透明物体渲染(包含反射判断);
+:2D平面背景渲染(如果有);
+:环境映射渲染(目前好像只实现了立方体映射);
+:透明物体渲染(也包含反射判断,但折射方面尚未完成);
+:生成该渲染目标的Mipmap;
+endgroup
+group ForwardRendering
+:此处有点复杂,等待学习后更新;
+endgroup
+stop
+@enduml

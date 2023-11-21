@@ -1,0 +1,45 @@
+@startuml BuildCreator
+start
+:整个Builder由两个python脚本完成;
+split
+:chunks.json;
+note left
+此文件包含所有shader模块路径
+=====
+顶点着色器.vert
+片元着色器.frag
+endnote
+:tempfile.skstemp()创建临时文件,暂存合并后的shader代码;
+:shaderLib.js;
+split again
+:icreator3d.json;
+note right
+此文件包含所有js模块路径
+=====
+添加任何新模块build前
+请先在该文件中写入路径
+endnote
+split
+:tempfile.skstemp()创建临时文件,暂存合并后的js代码;
+:临时文件"path";
+:output输出合成版js;
+:icreator_all.js <1103KB>;
+split again
+:外部程序compiler.jar输出压缩版本js;
+note right
+Google Closure Compiler优化工具
+=====
+移除未使用代码
+变量重名名
+函数inline化
+endnote
+:icreator_min.js;
+:外部工具lzma.exe压缩至base64版本;
+:icreator_min_lzma;
+:tempfile再次创建临时文件,存lzma压缩的base64版;
+:shutil.copy转换至最终版;
+:icreator.js <169KB>;
+endsplit
+endsplit
+stop
+@enduml

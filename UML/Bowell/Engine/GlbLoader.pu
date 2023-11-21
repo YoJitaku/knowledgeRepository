@@ -40,5 +40,35 @@ note right
 因为GLB输出时自动填充了ChunkData
 规则:不够4字节的,Json填充0x20,Bin填充0x00
 endnote
+group ReadJson
+split
+:Asset;
+split again
+:Scene;
+split again
+:Meshes;
+split again
+:Nodes;
+split again
+:Buffers;
+split again
+:Accessors;
+split again
+:BufferViews;
+split again
+:BufferData;
+split again
+:Materials;
+split again
+:Texture;
+split again
+:Image;
+split again
+:Samplers;
+split again
+:Extensions;
+endsplit
+endgroup
+:;
 stop
 @enduml

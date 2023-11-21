@@ -1,0 +1,35 @@
+@startuml GPUProcess
+start
+:数据准备;
+note right
+将顶点数据和索引数据储存在Buffer中
+endnote
+:创建帧缓冲对象FBO;
+:创建附加颜色附件;
+:创建附加深度附件和模板附件;
+:激活帧缓冲对象;
+note right
+离屏渲染，后期处理时
+需要在屏幕帧缓冲以外的FBO上进行渲染
+一般情况下不激活就是默认的屏幕帧缓冲
+endnote
+:激活和配置属性;
+note right
+启动特定顶点属性数组
+告诉WebGL如何解析缓冲区数据
+endnote
+:传递数据到着色器;
+note right
+gl.bindBuffer根据设置传递数据
+endnote
+:顶点着色器处理;
+note right
+对每个顶点进行计算,空间坐标法线变换等
+endnote
+:片元着色器处理;
+note right
+处理每个像素的计算,颜色计算纹理采样等
+endnote
+:ResetFBO,交换帧缓冲;
+stop
+@enduml

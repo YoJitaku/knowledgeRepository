@@ -1,0 +1,71 @@
+@startuml Asset
+start
+:Load模型时的Asset定义;
+split
+:model;
+group modelLoader
+split
+:Transfrom;
+split again
+:Light;
+split again
+:Camera;
+split again
+:Morph;
+:MorphTarget;
+split again
+:skin;
+split again
+:Mesh;
+split again
+:BaseNode;
+split again
+:MeshNode;
+split again
+:Node;
+endsplit
+endgroup
+split again
+:animations;
+split again
+:lights;
+split again
+:cameras;
+split again
+:glBuffers[];
+endsplit
+stop
+start
+group GLTFLoader
+:JsonObject已获得;
+:LoadResource;
+note right
+const promise = parse(loader, gltf);
+endNote
+:Parse;
+note right
+const extensions = defaultValue(gltf.extensions, defaultValue.EMPTY_OBJECT);
+const structuralMetadataExtension = extensions.EXT_structural_metadata;
+const featureMetadataExtensionLegacy = extensions.EXT_feature_metadata;
+const cesiumRtcExtension = extensions.CESIUM_RTC;
+const nodes = loadNodes(loader, gltf, supportedImageFormats, frameState);
+const skins = loadSkins(loader, gltf, nodes);
+const animations = loadAnimations(loader, gltf, nodes);
+const articulations = loadArticulations(gltf);
+const scene = loadScene(gltf, nodes);
+
+endNote
+split
+:第三方扩展;
+split again
+:节点/动画/皮肤/关节/场景;
+split again
+:Component/Asset;
+split again
+
+split again
+
+endsplit
+endgroup
+stop
+@enduml

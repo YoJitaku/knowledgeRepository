@@ -1,0 +1,71 @@
+@startuml CreatorCore
+start
+:CreateCanvas;
+group InitWebGL
+:GetCanvas;
+:GetContext;
+:GetWebGLCompatibility;
+note right
+兼容性相关
+endnote
+:DecodeShaderChunks;
+endgroup
+:TimeWatchStart;
+group Engine定义与WebGL的通信相关
+split
+:设置清屏模式/颜色;
+:设置深度模式;
+:设置剔除模式;
+split again
+:创建Buffer;
+:绑定Buffer;
+:设置Buffer;
+:更新Buffer;
+split again
+:创建Shader对象;
+:生成Shader源码;
+:编译Shader源码;
+:生成执行程序;
+:添加Shader代码;
+:链接Shader程序;
+:释放Shader源码(已生成执行程序);
+split again
+:创建帧缓冲FBO;
+:绑定帧缓冲FBO;
+:添加颜色缓冲附件;
+:添加渲染缓冲(深度缓冲+模板缓冲);
+split again
+:绑定缓冲区和着色器;
+:配置数据读取于传递;
+:更新顶点缓冲和索引缓冲区;
+endsplit
+endgroup
+group Instance3D
+split
+:不透明物体的排序;
+:透明物体的排序;
+split again
+:主渲染;
+:渲染队列处理;
+:单个目标的渲染;
+split again
+:前向渲染;
+split again
+:反射处理;
+:更新反射相机;
+:更新反射平面;
+split again
+:渲染深度图;
+:渲染法线图;
+endsplit
+endgroup
+group Scene
+:初始化;
+split
+
+split again
+endsplit
+endgroup
+:TimeWatchEnd;
+stop
+@enduml

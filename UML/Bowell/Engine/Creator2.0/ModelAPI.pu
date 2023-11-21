@@ -1,0 +1,24 @@
+@startuml ModelAPI
+start
+:CesiumJS最新架构!!!;
+:For 3DTiles1.1 + glTF 2.0;
+split
+:ModelExperimental缓存机制;
+split again
+
+endsplit
+stop
+
+start
+:Model.fronGltf;
+:new GltfLoader();
+:loader.promise-->Model.js的Init;
+:;
+
+stop
+
+start
+:对所有网络请求资源进行封装ResourceClass;
+:即自己封装HXR,不使用ajax;
+stop
+@enduml

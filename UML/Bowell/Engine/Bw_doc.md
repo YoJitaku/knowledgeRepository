@@ -2,33 +2,58 @@
 
 ## 一.文档结构
 
+欢迎来到 Bowell_DT 机密，阅览之前请先签署保密协议。
+各个部分以 PlantUml 流程图为主体引导。
+其余作为概念介绍，详细情况请阅读源代码。
+
 ### 1.知识储备
 
-### 2.引擎结构
+文档由 MarkDown 编写，流程图由 PlantUml 编写。
 
-### 3.学习顺序
+#### 1. Bowell_DT 格式转换器主体由 C++编写。
+
+另外还涉及 Window 下的.bat 批处理命令。
+以及 Linux 下的.sh 的 Shell 命令行处理。
+第三方库使用 FBXSDK2017 处理模型数据
+FlatBuffer 序列化数据至二进制模式，用于传输
+FreeImage 处理图像等
+最后执行程序由 CMakeLists 负责编译。
+
+#### 2. Bowell_DT ICreator 底层引擎由 Javascript 编写
+
+采用 IIFE 模式解耦各个模块
+
+#### 3. Bowell_DT Editor 编辑器引擎由 Javascript 编写
 
 ## 二.格式转换器
 
+![Alt text](Exporter.png)
+
 ### 1.模型输入分流
 
-#### 1.1 windows/批处理
+fbs.bat 批处理程序运行在 windows 系统下
+批处理程序自动根据输入的文件类型调用 3 个不同的工具
+目标是得到统一的 FBX 格式文件
 
-#### 1.2 Linux/Shell
+export.sh shell 程序运行于 Linux 系统下
+批处理程序自动根据输入的文件类型调用 3 个不同的工具
+目标是得到统一的 FBX 格式文件
 
 ### 2.第三方工具转 FBX
 
-#### 2.1 Blender 工具
+对于无法直接被 Bw_Exporter 处理的格式，通过调用以下三个工具进行格式转换至 FBX 格式
 
-#### 2.2 Maya 工具
-
-#### 2.3 3DMAX 工具
+1. Blender 工具处理: ply/stl/x3d/wrl/abc/svg
+2. Maya 工具处理: ma/mb
+3. 3DMAX 工具处理: max/MAX
 
 ### 3.FBX 解析
 
 #### 3.1 FBXSDK 介绍
 
-#### 3.2 数据分类
+FBX 格式不开源，只能通过 FBXSDK 处理 FBX 模型，Bw_Exporter 使用 FBXSDK2017
+
+#### 3.2 数据解包
 
 ##### 3.2.1 Animation
 
@@ -60,9 +85,33 @@
 
 #### 6.3 输出文件
 
-## 三.渲染引擎
+## 三.ICreator 底层引擎
 
 ### 1.设计结构
+
+IIFE 设计模式，ES6，分离模块设计
+(但是从实际代码来看并没有实现解耦)
+(后续需要添加一个消息系统<有但是没应用>来统一管理组件之间的互相通信)
+
+#### 1.1 功能改动如何编译运行测试？
+
+src 文件夹下有 Build 和 Samples 两个文件夹
+build 负责所有的模块打包和处理
+Samples 包含一些测试用的文件
+
+##### 1.1.1 build
+
+![Alt text](BuildCreator.png)
+注意：
+Build 之前需要在 chunks.json 中添加新着色代码的路径
+Build 之前需要在 icreator3d.json 中添加新模块路径
+
+##### 1.1.2 Samples
+
+index.html 负责在网页端展示效果
+index.js 负责具体的功能调试
+注意：
+调试新功能前需要先 Build 项目，更新引用的 ICreator.js 库
 
 ### 2.Animation 模块
 
@@ -94,15 +143,33 @@
 
 ### 7.Core 核心模块
 
-#### 7.1 Scene 管理
+#### 7.1 WebGL 调用
 
-#### 7.2 WebGL 调用
+1.获取 webGL 上下文 2.获取兼容性信息(支持的各种参数的最大值) 3.解码 ShaderChunks
 
 ##### 7.2.1 WebGL 初始化
 
-#### 7.3 Depth 渲染
+1.基础设置
+清屏模式(颜色，深度，模板)
+<清屏模式由位掩码表示，可以同时表示三种参数的状态>
+清平颜色(RGBA)
+开启深度缓冲
+设置深度缓冲类型 LEQUAL
+激活多边形正反面剔除功能
+设置剔除面为背面
 
-#### 7.4 Engine 核心
+2.缓冲区 Buffer 设置
+创建缓冲区 createBuffer(只生成缓冲对象标识，尚未在显存内分配空间)
+绑定缓冲区 bindBuffer(告诉管线相关数据的持有对象，要数据就找这个缓冲对象)
+设置缓冲区 bufferData(真正给缓冲区对象分配显存空间，并将 CPU 数据传递至 GPU)
+更新缓冲区 bufferSubData(更新已经存在的缓冲对象 BO 中的部分数据)
+
+3.着色器 Shader 设置
+创建 Shader 对象 createShader(选择 Vtx 或者 Frag，里面还啥都没有呢)
+生成 Shader 源码 shaderSource(将外部着色器源码生成至 shader 对象中)
+编译 Shader 源码 complieShader(编译 shader 对象至二进制机器语言)
+
+#### 7.2 Scene 管理
 
 #### 7.5 第三方 SkyBox 环境
 
@@ -307,3 +374,18 @@
 ### 8.Style
 
 ### 9.Utils
+
+## 五.更新日志
+
+### Version_0.11_2023-11-9
+
+1. 添加了文档的整体目录框架
+
+### Version_0.12_2023-11-17
+
+1. 添加了转换器介绍，文档初始信息
+2. 添加了 ICreator 初始信息
+
+### Version_0.121_2023-11-20
+
+1. 添加了 ICreator 初始化 WebGL 引擎相关流程

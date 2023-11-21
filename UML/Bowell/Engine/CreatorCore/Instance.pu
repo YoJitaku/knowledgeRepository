@@ -1,0 +1,41 @@
+@startuml Instance
+start
+:Engine->Instance3D;
+group Function
+split
+:GetEffect;
+split again
+:BindLight;
+split again
+:BindRenderTarget;
+split again
+:Render;
+:GetSceneRoot;
+:GetRenderList;
+:RenderShadowMaps;
+:BindRenderTarget;
+group Opaques队列处理
+:排序Order-Effect-Mesh;
+:RenderUnit-->RenderUnitForward;
+:;
+:;
+endgroup
+split again
+:Depth;
+endsplit
+endgroup
+stop
+start
+:UnrealEngine;
+:双渲染管线;
+split
+:Forward Rendering;
+:处理半透明,抗锯齿等特殊效果;
+:因为前向渲染是以物体为单位,则不同物体可以有不同操作;
+split again
+:Deferred Rendering;
+:处理主要光照,不透明物体等;
+:延迟渲染适用于大量光源的计算,不适用于透明等;
+endsplit
+stop
+@enduml

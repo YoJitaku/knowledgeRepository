@@ -1,0 +1,69 @@
+@startuml EdtiorCore
+start
+split
+:Editor;
+split again
+:Engine;
+split
+:Canvas2D;
+split again
+:Common;
+split
+:component组件基类;
+split again
+:Console类;
+split again
+:输入控制类;
+split again
+:model类;
+split again
+:Tweening插值库;
+split again
+:UI元素(包含Auido/Video扩展);
+split again
+:Utility工具类;
+endsplit
+split again
+:Data;
+split
+:DataModel数据模型;
+split again
+:DataSource数据连接(BluePrint);
+split again
+:DataManager资源管理器;
+endsplit
+split again
+:Lib;
+:ICreator在此!;
+split again
+:Setting管理Engine的全局配置;
+split
+:Set_Bg背景;
+split again
+:Set_Bgm背景音;
+split again
+:Set_Env环境光;
+split again
+:Set_Physys物理系统;
+split again
+:Set_PostEff后处理;
+endsplit
+split again
+:Source;
+split
+:Core;
+split again
+:Enum全引擎枚举大集合;
+split again
+:Math数学大集合;
+split again
+:Physical碰撞半成品;
+split again
+:server服务器大合集;
+endsplit
+split again
+:Style(css设置);
+endsplit
+endsplit
+stop
+@enduml
