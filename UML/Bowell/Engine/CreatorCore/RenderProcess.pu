@@ -46,7 +46,7 @@ endsplit
 :生成该渲染目标的Mipmap;
 endgroup
 group ForwardRendering
-:此处有点复杂,等待学习后更新;
+:前向渲染,等待学习后更新;
 endgroup
 stop
 @enduml
