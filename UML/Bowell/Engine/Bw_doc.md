@@ -169,6 +169,14 @@ index.js 负责具体的功能调试
 生成 Shader 源码 shaderSource(将外部着色器源码生成至 shader 对象中)
 编译 Shader 源码 complieShader(编译 shader 对象至二进制机器语言)
 
+##### 7.1.2 GPU 缓冲区，着色器等的大致运行流程
+
+![Alt text](GPUProcess.png)
+
+##### 7.1.3 渲染的大致流程
+
+![Alt text](RenderProcess.png)
+
 #### 7.2 Scene 管理
 
 #### 7.5 第三方 SkyBox 环境
