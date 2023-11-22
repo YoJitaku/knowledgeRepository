@@ -1132,8 +1132,48 @@ this._renderunitForward = (function () {
     }
 
     if (camera) {
-      ...
+      effect.setCameraViewMatrix(viewUniformID, camera);
+      effect.setCameraProjectionMatrix(projectionUniformID, camera);
     }
+    if (scene) {
+      if (scene._logdepth) {
+        if (scene.oneOverLog2FarDepthFromNearPlusOne !== undefined)
+          effect.setFloat(
+            "czm_oneOverLog2FarDepthFromNearPlusOne",
+            scene.oneOverLog2FarDepthFromNearPlusOne
+          );
+        if (scene.oneOverLog2FarDepthFromNearPlusOne !== undefined)
+          effect.setFloat(
+            "czm_farDepthFromNearPlusOne",
+            scene.farDepthFromNearPlusOne
+          );
+        if (scene.currentFrustum !== undefined)
+          effect.setVector2("czm_currentFrustum", scene.currentFrustum);
+      }
+      if (material._acceptLight === true) {
+        bindLights(scene, effect);
+      }
+      if (scene._envRotationFlag === true) {
+        effect.setMatrix3(environmentRotationUniformID, scene._envRotation);
+      }
+    }
+    if (preEffect !== effect) {
+      forceBindMesh = true;
+      preEffect = effect;
+    }
+    if (forceBindMesh || preBoundMesh !== mesh) {
+      engine.bindMesh(mesh, effect);
+      preBoundMesh = mesh;
+    }
+    material.bindEffect(effect, unit, scene, camera);
+    setMaterialState(material);
+
+    if (mesh.index) {
+      engine.drawElements(material.fillMode, from, to - from);
+    } else {
+      engine.drawArrays(material.fillMode, from, to);
+    }
+    unit.__effect = effect;
   };
 })();
 ```
@@ -1309,4 +1349,158 @@ ic.inheritPrototype = function (base, map, propertyDescs) {
   var prototype = Object.create(base.prototype, propertyDescs);
   return this.objectAssign(prototype, map);
 };
+```
+
+```js
+BaseNode.prototype = {
+  constructor: BaseNode,
+  type: 'BaseNode',
+  get aabbChanged(){...},
+  set aabbChanged(value){...},
+  sync: function(){
+    if(this._dirtyLocal === true){
+      this._localMat.compose(
+        this._localPosition,
+        this._localQuaternion,
+        this._localScale
+      );
+      this._DirtyLocal = false;
+      this._markWorldDirty();
+    }
+    if(this._DirtyWorld === false) return;
+    if(this._parent === null){
+      this._worldMat.copy(this._localMat);
+    }else{
+      this._parent._worldMat.mulTo(this.localMat, this._worldMat);
+    }
+    this._worldMat.getTranslation(this._position);
+    this._inWorldDirty = true;
+    this._worldVersion ++;
+    var child, i, len;
+    for(i = 0, len = this._children.length; i < len; i++){
+      child = this._children[i];
+      child._markWorldDirty();
+      //child.dirtyWorld = true;
+      //child._aabbChanged = true;
+    }
+  },
+  syncTrees: (function(){
+    var _func = function(){
+      this.sync();
+      var c = this._children;
+      for(var i = 0, len = c.length; i < len; i++){
+        _func.call(c[i]);
+      }
+    };
+    return _func;
+  }()),
+}
+```
+
+```js
+MeshNode.prototype = ic.inheritPrototype(Super, {
+  type: "MeshNode",
+  isMeshNode: true,
+  constructor: MeshNode,
+  getAabb: function (noSync) {
+    var wrold = noSync ? this._worldMat : this.getWorld();
+    if (this.mesh && this._aabbChanged) {
+      this._aabb.copy(this.mesh.aabb);
+      if (this._aabb.isEmpty() === false) {
+        this._aabb.transformByMat4(world);
+      }
+      this._aabbChanged = false;
+    }
+    return this._aabb;
+  },
+  bind: function (effect) {
+    if (this._skin) {
+      var skin = this._skin;
+      if (skin.skinTech === ic.SkinUniform) {
+        effect.setMatrix4FromArray("uJointMarices", skin._floatJointsMatArray);
+      } else {
+        effect.setTexture("uJointSampler", skin._dataTexture);
+      }
+    } else {
+      effect.setMatrix4("uWorldMat", this._worldMat);
+    }
+    if (this._morph) {
+      effect.setArray("uMorphWeights", this._morph._weightValues);
+    }
+  },
+  updateEffectKey: function () {
+    var skinEffectKey = this._skin ? this._skin.skinTech : 0.0;
+    var morphEffectKey = this._morph ? this._morph.effectValue : 0.0;
+    var shadowReceiveEffectKey = this._receiveShadow ? 1.0 : 0.0;
+    this._effectKey =
+      skinEffectKey << 0 || morphEffectKey << 2 || shadowReceiveEffectKey << 3;
+  },
+});
+```
+
+```js
+var MeshLayout = function (verticesNum) {
+  this._num = verticesNum;
+  this._layouts = [];
+  this._index = null;
+};
+MeshLayout.prototype = {
+  constructor: MeshLayout,
+  addAttributes: function (attributes, type, usage, _data) {
+    var stride = 0;
+    var num = this._num;
+    var needRefreshNum = num === undefined;
+    for (var i = 0; i < attributes.length; i++) {
+      var attribute = attributes[i];
+      stride += attribute.size;
+      if (needRefreshNum) {
+        if (attribute.data) {
+          num = attribute.data.length / attribute.size;
+          if (this._num && num !== this._num) {
+            window.console.error(
+              ".addAttributes the count of vtxattri is no t uniformity"
+            );
+          }
+          this._num = num;
+        } else {
+        }
+      }
+    }
+    var layout = {
+      attributes: attributes,
+      type: type,
+      usage: usage,
+      stride: stride,
+      array: _data,
+    };
+    this._layouts.push(layout);
+  },
+  setIndex: function (data, usage, notConvert) {
+    this._index = {
+      data: data,
+      usage: usage,
+      notConvert
+    };
+  },
+};
+var Mesh = function (name) {
+  this._id = ic.globalId();
+  this.name = name || 'untitiled';
+  this._vertAttribs = {};
+  this.index = null;
+  this._aabb = null;
+};
+Mesh.prototype = {
+  isMesh: true,
+  constructor: Mesh,
+  get count(){},
+  get aabb(){},
+  calcAabb: function(){},
+  addVertexAttribute: function(type, vertexAttribute){},
+  getVertexAttribute: function(type){},
+  removeVertexAtrribute: function(type){},
+  ....
+};
+ic.MeshLayout = MeshLayout;
+ic.Mesh = Mesh;
 ```

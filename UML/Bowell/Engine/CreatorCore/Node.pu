@@ -1,8 +1,19 @@
 @startuml Node
 start
 :BaseNode;
+note right
+节点版本号
+世界矩阵，本地矩阵
+节点树的同步(仅涉及该节点及其子类)
+endnote
 split
 :MeshNode;
+note right
+Mesh, Material, SubMesh
+Shadow开启，反射开启， 后处理开启
+绑定Effect
+NormalDrawOrder
+endnote
 split
 :BillBoard;
 split again

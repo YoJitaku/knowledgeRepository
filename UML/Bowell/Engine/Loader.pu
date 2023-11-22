@@ -1,0 +1,11 @@
+@startuml Loader
+start
+:LoadingMonitor;
+split
+:ModelLoader;
+:Parse(arraybuffer);
+:return:{model, cameras, lights};
+split again
+endsplit
+stop
+@enduml

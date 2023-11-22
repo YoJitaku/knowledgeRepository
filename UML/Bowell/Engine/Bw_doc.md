@@ -22,6 +22,7 @@ FreeImage 处理图像等
 #### 2. Bowell_DT ICreator 底层引擎由 Javascript 编写
 
 采用 IIFE 模式解耦各个模块
+ES5 标准
 
 #### 3. Bowell_DT Editor 编辑器引擎由 Javascript 编写
 
@@ -149,6 +150,8 @@ index.js 负责具体的功能调试
 
 ##### 7.2.1 WebGL 初始化
 
+![Alt text](GPUProcess.png)
+
 1.基础设置
 清屏模式(颜色，深度，模板)
 <清屏模式由位掩码表示，可以同时表示三种参数的状态>
@@ -169,19 +172,38 @@ index.js 负责具体的功能调试
 生成 Shader 源码 shaderSource(将外部着色器源码生成至 shader 对象中)
 编译 Shader 源码 complieShader(编译 shader 对象至二进制机器语言)
 
-##### 7.1.2 GPU 缓冲区，着色器等的大致运行流程
-
-![Alt text](GPUProcess.png)
-
-##### 7.1.3 渲染的大致流程
-
-![Alt text](RenderProcess.png)
-
 #### 7.2 Instance3D 引擎实例
 
-实例化 WebGLEngine
+![Alt text](RenderProcess.png) 1.实例化 WebGLEngine
+
+2.从场景获取渲染列表，划分成不透明队列和透明队列
+
+3.透明队列有反射属性，不透明队列有反射和折射队列
+注:折射代码尚未完成
+
+4.透明队列和不透明队列的排序算法
+
+5.深度渲染模块
+
+6.法线贴图模块
+
+7.前向渲染模块
 
 #### 7.3 Scene 场景管理
+
+1.创建环境节点
+
+2.伽马模式
+
+3.色调映射
+
+4.曝光
+
+5.灯光的管理
+添加，更新，移除
+
+6.节点树管理(底层结构在 Chapter15 Node 模块)
+添加，移除，获取渲染队列，版本节点号
 
 #### 7.5 第三方 SkyBox 环境
 
@@ -407,3 +429,7 @@ index.js 负责具体的功能调试
 1. 添加了 GPU 内部的数据流程
 2. 添加了 Render 的大致流程
 3. 添加了 Instance 引擎实例类
+
+### Version_0.123_2023-11
+
+1.添加了 Node 模块相关
