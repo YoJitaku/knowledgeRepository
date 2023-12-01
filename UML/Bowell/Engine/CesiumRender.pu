@@ -1,0 +1,31 @@
+@startuml CesiumRender
+start
+group Cesium封装了WebGL到3类指令
+split
+:DrawCommand;
+split again
+:ClearCommand;
+split again
+:ComputeCommand;
+endsplit
+endgroup
+group Cesium的通道Pass
+note right
+通道优先度
+const Pass = {
+  ENVIRONMENT: 0,环境
+  COMPUTE: 1,
+  GLOBE: 2,
+  TERRAIN_CLASSIFICATION: 3,
+  CESIUM_3D_TILE: 4,
+  CESIUM_3D_TILE_CLASSIFICATION: 5,
+  CESIUM_3D_TILE_CLASSIFICATION_IGNORE_SHOW: 6,
+  OPAQUE: 7,不透明
+  TRANSLUCENT: 8,透明
+  OVERLAY: 9,
+  NUMBER_OF_PASSES: 10,
+}
+endnote
+endgroup
+end
+@enduml

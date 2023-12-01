@@ -1,0 +1,13 @@
+@startuml FBS
+:model;
+:cameras,lights,model,morphs,nodearray,nodemap,parentindexs,skins;
+:model--name,subHierarychyVerion,up,visible,_aabb_aabbchanged;
+
+
+
+start
+:从Instance3D渲染处改动;
+
+
+end
+@enduml

@@ -28,7 +28,7 @@ ES5 标准
 
 ## 二.格式转换器
 
-![Alt text](Exporter.png)
+![Alt text](Exporter/Exporter.png)
 
 ### 1.模型输入分流
 
@@ -90,7 +90,7 @@ FBX 格式不开源，只能通过 FBXSDK 处理 FBX 模型，Bw_Exporter 使用
 
 ### 1.设计结构
 
-IIFE 设计模式，ES6，分离模块设计
+IIFE 设计模式，ES5，分离模块设计
 (但是从实际代码来看并没有实现解耦)
 (后续需要添加一个消息系统<有但是没应用>来统一管理组件之间的互相通信)
 
@@ -102,7 +102,8 @@ Samples 包含一些测试用的文件
 
 ##### 1.1.1 build
 
-![Alt text](BuildCreator.png)
+![Alt text](Creator/BuildCreator.png)
+
 注意：
 Build 之前需要在 chunks.json 中添加新着色代码的路径
 Build 之前需要在 icreator3d.json 中添加新模块路径
@@ -150,7 +151,7 @@ index.js 负责具体的功能调试
 
 ##### 7.2.1 WebGL 初始化
 
-![Alt text](GPUProcess.png)
+![Alt text](Creator/GPUProcess.png)
 
 1.基础设置
 清屏模式(颜色，深度，模板)
@@ -174,7 +175,9 @@ index.js 负责具体的功能调试
 
 #### 7.2 Instance3D 引擎实例
 
-![Alt text](RenderProcess.png) 1.实例化 WebGLEngine
+![Alt text](Creator/RenderProcess.png)
+
+1.实例化 WebGLEngine
 
 2.从场景获取渲染列表，划分成不透明队列和透明队列
 

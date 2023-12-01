@@ -1,0 +1,55 @@
+@startuml DataLoader
+start
+split
+:Attribute;
+note right
+POSITION
+NORMAL
+TEXCOORD
+TANGENT
+COLOR
+JOINTS
+WEIGHTS...
+endnote
+split again
+:Accessor;
+split
+:componentType;
+note right
+5120 ubyte 8
+5121 byte 8
+5122 short 16
+5123 ushort 16
+5125 int 32
+5126 float 32
+endnote
+split again
+:type;
+note right
+SCALAR 1
+VEC2 2
+VEC3 3
+VEC4 4
+MAT2 4
+MAT3 9
+MAT4 16
+endnote
+endsplit
+split again
+:BufferView;
+note right
+byteOffset
+byteLength
+byteStride
+target:索引/顶点缓冲表示
+endnote
+endsplit
+split
+:VertexBufferload;
+split again
+:IndexBufferload;
+endsplit
+:BufferViewLoader;
+:return <TypeArray>;
+stop
+@enduml

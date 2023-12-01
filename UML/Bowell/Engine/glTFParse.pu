@@ -1,43 +1,5 @@
-@startuml Loader
+@startuml glTFParse
 start
-group GlbLoader->加载Glb模型->分离Json和Bin数据
-:二进制文件读取;
-note right
-添加了Http获取二进制文件为arrayBuffer的新功能
-====
-ic.Http模块和ic.LoadingMonitor模块逻辑复杂(混乱?)
-存在很多无效代码(为了扩展?)
-endnote
-:跳过开头12位标头;
-note right
-uint32 * 3 = magic + version + length
-=====
-Magic:0x46546C67用于识别glTF
-Version:记录glb容器版本
-Length:glb总长度
-endnote
-:接下来就是块状结构;
-split
-:Chunk0<JSON文件>;
-split
-:ReadChunkLength;
-split again
-:ReadChunkType<0x4E4F534A>;
-split again
-:ReadChunkData;
-endsplit
-split again
-:chunk1<BIN>;
-split
-:ReadChunkLength;
-split again
-:ReadChunkType<0x004E4942>;
-split again
-:ReadChunkData;
-endsplit
-endsplit
-endgroup
-group 利用Json转换为Model组件->先处理纹理->再处理其他
 :全Loader异步执行//Promise.All确认异步加载情况;
 Group LoadScene
 split
@@ -94,9 +56,6 @@ endsplit
 endgroup
 endgroup
 endgroup
-endgroup
-endgroup
-group 由Model创建DrawCall
 endgroup
 stop
 @enduml

@@ -1,0 +1,31 @@
+@startuml glTFCache
+start
+group glTFCache
+:加载任何Bin数据;
+:GetCacheKey;
+note right
+VertexBufferLoader
+IndexBufferLoader
+TextureLoader
+Image/SamplerLoader
+endnote
+:CheckCacheKey;
+group CachePool
+split
+:命中;
+:return;
+stop
+split again
+:未命中;
+:CacheKey : Data.ResourceType;
+note right
+VertexBufferCache
+IndexBufferCache
+TextureCache
+endnote
+:CacheKey : Data.referenceCount++;
+endsplit
+endgroup
+endgroup
+stop
+@enduml

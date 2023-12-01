@@ -443,61 +443,6 @@ tmpSourceNode.onended = function () {
 
 ```js
 (function (ic) {
-var LoadingMonitor = function(onload, onprogress, onerror)
-{
-  var _this = this;
-  var isloading = false, itemsLoaded = 0, itemsTotal = 0;
-  this.percent = 0;
-  this.onBegin = undefined;
-  this.onLoad = onload;
-  this.onProgress = onprogress;
-  this.onError = onerror;
-  this.itemLoadStart = function(url){
-    itemsTotal++;
-    if(isLoading === false){
-      if(_this.onBegin !== undefined){
-        _this.onBegin(url, itemsLoaded, itemsTotal);
-      }
-    }
-    isLoading = true;
-  };
-  this.itemLoadEnd = function(url){
-    itemsLoaded++；
-    this.percent += (1-this.percent)/(itemsTotal - (itemsLoaded -1));
-    if(_this.onProgress !== undefined){
-      _this.onProgress(url, itemsLoaded, itemsTotal);
-    }
-    if(itemsLoaded === itemsTotal){
-      isLoading = false;
-      if(_this.onLoad !== undefined){
-        _this.onload();
-      }
-    }
-  };
-  this.itemLoadError = function(url){
-    if(_this.onError !== undefined){
-      _this.onError(url);
-    }
-  };
-  this.reset = function(){
-    if(isLoading){return false;}
-    else(
-      itemsLoaded = 0;
-      itemsTotal = 0;
-      this.percent = 0;
-      return true;
-    )
-  };
-};
-LoadingMonitor.prototype = {
-  constructor: LoadingMonitor
-};
-ic.LoadingMonitor = LoadingMonitor;
-})(ICreator);
-```
-
-```js
-(function (ic) {
   var Http = function (monitor) {};
   Http.prototype = {};
   ic.Http = Http;
@@ -1503,4 +1448,77 @@ Mesh.prototype = {
 };
 ic.MeshLayout = MeshLayout;
 ic.Mesh = Mesh;
+```
+
+```js
+initAsset(attachloader);
+
+var initAsset = function(onload){
+  var loadingMonitor = new ic.LoadingMonitor(onload);
+  Global.envMap = new ic.EnvMapLoader(loadingMonitor).load(Global.envImages, function(envMap){
+    Global.scene.envMap = envMap;
+  });
+};
+
+var attachloader = function(){
+  var loader = new ic.FbsLoader();
+  var onload = function(asset){
+    Global.scene.addNode(asset.model0;
+    update();)
+  };
+  loader.load(path, pathname, path, onload);
+}
+(function (ic) {
+var LoadingMonitor = function(onload, onprogress, onerror)
+{
+  var _this = this;
+  var isloading = false, itemsLoaded = 0, itemsTotal = 0;
+  this.percent = 0;
+  this.onBegin = undefined;
+  this.onLoad = onload;
+  this.onProgress = onprogress;
+  this.onError = onerror;
+  this.itemLoadStart = function(url){
+    itemsTotal++;
+    if(isLoading === false){
+      if(_this.onBegin !== undefined){
+        _this.onBegin(url, itemsLoaded, itemsTotal);
+      }
+    }
+    isLoading = true;
+  };
+  this.itemLoadEnd = function(url){
+    itemsLoaded++；
+    this.percent += (1-this.percent)/(itemsTotal - (itemsLoaded -1));
+    if(_this.onProgress !== undefined){
+      _this.onProgress(url, itemsLoaded, itemsTotal);
+    }
+    if(itemsLoaded === itemsTotal){
+      isLoading = false;
+      if(_this.onLoad !== undefined){
+        _this.onload();
+      }
+    }
+  };
+  this.itemLoadError = function(url){
+    if(_this.onError !== undefined){
+      _this.onError(url);
+    }
+  };
+  this.reset = function(){
+    if(isLoading){return false;}
+    else(
+      itemsLoaded = 0;
+      itemsTotal = 0;
+      this.percent = 0;
+      return true;
+    )
+  };
+};
+LoadingMonitor.prototype = {
+  constructor: LoadingMonitor
+};
+ic.LoadingMonitor = LoadingMonitor;
+})(ICreator);
+
 ```
