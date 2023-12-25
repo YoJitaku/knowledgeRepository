@@ -1,0 +1,19 @@
+@startuml glTFLoaderSec3
+start
+:转换至符合BwEngine节点类型的节点树;
+:遍历所有节点(深度优先),并判断节点类型;
+split
+:CameraNode;
+:对应Info转换至BwCamera;
+split again
+:EmptyNode;
+split again
+:MeshNode;
+:生成AABB_BOX;
+:读取Bin数据并加载至bwEngineNode(异步);
+split again
+:...(各种扩展等);
+endsplit
+:返回节点树并AddToScene;
+stop
+@enduml

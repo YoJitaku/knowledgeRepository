@@ -1,3 +1,14 @@
+/* ==================================================================
+ * Copyright (c) 2023 Bowell_DT.
+ * All rights reserved.
+ * ===================================================================
+ * Author: Yusz.
+ * Version: 1.0.
+ * Description: .
+ */
+
+
+
 class LoaderFunction {
   let glTF_Json;
   let glTF_Data;

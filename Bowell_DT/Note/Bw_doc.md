@@ -147,7 +147,11 @@ index.js 负责具体的功能调试
 
 #### 7.1 WebGL 调用
 
-1.获取 webGL 上下文 2.获取兼容性信息(支持的各种参数的最大值) 3.解码 ShaderChunks
+1.获取 webGL 上下文
+
+2.获取兼容性信息(支持的各种参数的最大值)
+
+3.解码 ShaderChunks
 
 ##### 7.2.1 WebGL 初始化
 
@@ -256,6 +260,23 @@ index.js 负责具体的功能调试
 
 #### 10.6 ObjectLoader
 
+#### 10.7 glTF2.0Loader(Ver2.0 update)
+
+##### 10.7.1 二进制 glb 单文件加载
+
+Section1：将二进制文件解析成 json(场景结构描述等)和 bin(模型数据等)两个文件
+![Alt text](Creator/glTFLoaderSec1.png)
+Section2：根据 json 结构创建 Mesh 节点树(剔除多余节点的全 MeshNode 树)
+Section3：根据节点树的节点位置和 AABB 盒得到 renderList 之后，读取缓冲区数据
+
+注：从 Sec1 开始是一个 Promise 链
+
+##### 10.7.2 glTF 材质模型数据等各自单独文件的加载
+
+##### 10.7.3 Draco 压缩版的 glTF 文件加载
+  
+##### 10.7.4 Embedded 嵌入式的 glTF 文件加载
+
 ### 11.Material 模块
 
 #### 11.1 BillboardMaterial
@@ -284,7 +305,17 @@ index.js 负责具体的功能调试
 
 #### 12.4 Matrix 矩阵
 
+Ver2.0 Update
+添加了 Clone, Identity, unpack 原型方法
+添加了 getScale, getQuaternion 对象方法
+注:
+从 4x4 仿射变换矩阵中首先获取 3x3 旋转矩阵
+再根据是否为纯旋转矩阵来分离出 scale 和 quaternion
+
 #### 12.5 Vector 向量
+
+Ver2.0 Update
+添加了一些原型方法
 
 #### 12.6 Plane 空间平面
 

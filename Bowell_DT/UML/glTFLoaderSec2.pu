@@ -1,0 +1,26 @@
+@startuml glTFLoaderSec2
+start
+:根节点起始遍历所有节点信息(深度优先);
+:计算所有节点的世界矩阵和本地矩阵以及对应TRS信息;
+split
+:WorldMatrix;
+split
+:Position;
+split again
+:Quaternion;
+split again
+:scale;
+endsplit
+split again 
+:localMatrix;
+split
+:Position;
+split again
+:Quaternion;
+split again
+:scale;
+endsplit
+endsplit
+:生成BwEngineNode;
+stop
+@enduml

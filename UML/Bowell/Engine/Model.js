@@ -1,9 +1,9 @@
 /* ==================================================================
- * Copyright (c) 2023 by Bowell_DT. All Rights Reserved.
- * ===================================================================
+ * Copyright (c) 2023 Bowell_DT. All Rights Reserved.
+ * ==================================================================
  * Author: Yusz.
  * Version: 1.0.
- * Description: glTF数据格式全定义.
+ * Description: glTF数据定义.
  */
 (function (ic) {
   "use strict";

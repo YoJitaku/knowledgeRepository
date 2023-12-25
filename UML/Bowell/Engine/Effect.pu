@@ -1,0 +1,12 @@
+@startuml Effect
+start
+:Image的Uint8Array;
+:Sampler;
+:Texture;
+:Material;
+stop
+start
+:GetRenderTarget;
+:
+stop
+@enduml

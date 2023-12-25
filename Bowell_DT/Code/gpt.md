@@ -1522,3 +1522,290 @@ ic.LoadingMonitor = LoadingMonitor;
 })(ICreator);
 
 ```
+
+```js
+this.loadConfig = function(){
+var assetsNum = 0;
+var animations = {};
+var modelMapping = null;
+var materials = {};
+var textures = {};
+var model;
+var lights;
+var cameras;
+onLoad = onload;
+onError = onerror;
+
+function conncent(model, mapping, materials){
+  ic.ModelLoader.connectMaterials(model, modelMapping, materials);
+}
+
+function checkComplete() {
+  assetsNum--;
+  if(assetsNum === 0){
+    conncent(model, mapping, materials);
+  }
+  if(name){
+    model.name = name;
+  }
+  var asset = {
+    model: model,
+    animations: animations,
+    lights: lights,
+    cameras: cameras,
+    glBuffers:[]
+  };
+
+  onLoad(asset);
+}
+function parsePath(config, url){
+  ...
+}
+var _configPath = parsePath(config, path);
+var onAnimLoadFn = function(anim){
+  animations[anim.name] = anim;
+  checkComplete();
+};
+for (var a in _configPath.Animations){
+  ...
+}
+
+for (var i in _configPath.Images)
+{
+
+}
+
+var onMatLoadFn = function(id){
+  return function(material){
+    materials[id] = material;
+    checkComplete();
+  };
+};
+
+for (var m in _configPath.Materials){
+  ...
+}
+
+var mappingLoader = new ic.Http(this._monitor);
+mappingLoader.responsetType = 'json';
+for (var s in _configPath.Models){
+  mappingLoader.load(
+    _configPath.Models[s].mappingUrl,
+    function(response){
+      modelMapping = response;
+      checkComplete();
+    },
+    null,
+    onerror
+  );
+  this._modelLoader.load(
+    _configPath.Models[s].modelUrl,
+    function (assets){
+      lights = assets.lights;
+      cameras = assets.cameras;
+      model = assets.model;
+      checkComplete();
+    },
+    onerror
+  );
+}
+}
+```
+
+```js
+generateEffect: function(engine, scene, unit){
+  var envMap = this._envMap || scene._envMap;
+  var rgbmEnvMap = !!envMap ? envMap.prefilterMapLod.rgbm : false;
+  envMap = !!envMap ? envMap.prefilterMapValid false;
+  var parameters = {
+    enableTiltOffset:
+    dithered:
+    needBlend:
+    morph:
+    needsMorphNormal:
+    vertexColor:
+    skin:
+    skinTech:
+    skinParam:
+    envMap:
+    rgbmEnvMap:
+    envIntensity:
+    envRotationFlag:
+    clipPlanesNum:
+    clipPlaneType:
+    metalnessWorkFlow:
+    diffuseOcclusion:
+    specularOcclusion:
+    enableSpecularAA:
+    ambientTint:
+    diffuseTint:
+    emissiveTint:
+    specularTint:
+    opacityTint:
+    gammaMode:
+    toneMapMode:
+    ue4IBL:
+    chunksVersion:
+    refraction:
+    reflectivity:
+    useNormalMapAsBump:
+    normalMapFlipY:
+    techniqueLoadIBL:
+    receiveShadow:
+    pointLightShadowNumber:
+    directionalLightShadowNumber:
+    shininessInversion:
+    logDepth:
+  }
+}
+
+```
+
+```js
+padding: function(){
+  let pads = {};
+  let end = '\n\n';
+  return function(pad, str){
+    if(!pads[pad]){
+      pads[pad] = new Array(pad).join(' ');
+    }
+    return pads[pad] + str + end;
+  };
+}
+
+precisionDeclare: function(){
+  let precision = ic.WebGLCompatibility.MaxPrecision;
+  return 'precision' + precision + ' float;\n\n';
+}
+```
+
+```js
+Head_VS{
+  attribute vec3 vPosition;
+  attribute vec3 vNormal;
+  attribute vec2 vUV1;
+  uniform mat4 uPreojection;
+  uniform mat4 uViewMat;
+  uniform mat4 uWorldMat;
+  vec3 gWorldPosition;
+  vec3 gWolrdNormal;
+  mat4 gWorldMatrix;
+  vec3 getWorldPosition(){
+    return gWorldPosition;
+  }
+}
+MainStart_VS{
+  void main(void){
+    gl_Position = getGLPosition();
+  }
+}
+
+```
+
+生成的 vtxShader 主函数
+
+```js
+void main(void){
+  gl_Position = getGLPosition();
+  varyWorldPosition = getWorldPosition();
+  varyWorldNormal = getWorldNormal();
+  varyWorldTangent = getWorldTangent();
+  varyWorldBinormal = getWorldBinormal();
+  varyUV1 = getUV1();
+}
+```
+
+生成的 FragShader 主函数
+
+```js
+void main(void){
+  if(uClipPlaneType == 1){
+    if(dot(varyWorldPosition, uClipPlane.xyz) > uClipPlane.w)
+    discard;
+  }else{
+    if(dot(varyWorldPosition, uClipPlane.xyz) < uClipPlane.w)
+    discard;
+  }
+  getAlbedo();
+  float gAlpha = 1.0;
+  getWorldViewDir();
+  getWorldNormal();
+  getWorldViewReflect();
+  getShininess();
+  getSpecular();
+  fresnel2Specular();
+  addAmbient();
+  addPointLights();
+  addDirLights();
+  combine();
+  addEmissive();
+  gFinalColor = toneMapping(gFinalColor);
+  gFinalColor = gammaOutput(gFinalColor);
+  gl_FragColor = vec4(gFinalColor, gAlpha);
+  if(uRenderDepth == 1){
+    float diffDepth = 1.0;
+    if(uEyePosition.y > uWaterLevel){
+      diffDepth = -(varyWorldPosition.y - uWaterLevel) / gWorldViewDir.y;
+      diffDepth = clamp(diffDepth * uDepthScale, 0, 0, 1.0);
+    }
+    gl_FragColor = vec4(diffDepth, diffDepth, diffDepth, 1.0);
+  }
+}
+```
+
+```js
+base:
+name,fillMode,needsBlend,blendMode,depthWrite,depthTest,depthFunc,cullstate
+Flags:
+acceptLight, aphaTestValue, refraction, reflectivity, metalnessWorkFlow, diffuseOcalusion, specularOcclusion,
+enableSpeacularAA, ambientTint, diffuseTint, specularTint, emissiveTint, gammaMode, enableEnvMap, normalMapFlipY
+techniqueLodIBL, shininessInversion, dithered, enableTiltOffset, enableClipPlane, useNormalMapAsBump, enableVertexColor
+Floats:
+alpha, shininess, normalMapRate, bumpMapFactor, metalness, indexOfRefraction
+Map2DS:
+diffuse, opacity, normal, shininess, specular, metalness, roughness,
+light, emissive, ao
+Colors:
+ambient, diffuse, specular, emissive
+
+set Colors:
+for(n in StandardMaterial.Colors){
+var colorDesc = StandardMaterial.Colors[n];
+this[colorDesc.setter](json[n][0], json[n][1], json[n][2]);
+if(colorDesc.hasIntensity) this[n + 'Intensity'] = json[n + 'Intensity'];
+}
+ndardMaterial.Colors = {
+  ambient = {
+    default: new ic.Color(0.0, 0.0, 0.0),
+    hasIntensity: false,
+    privite: '_ambient',
+    uniform: '_ambientUniform',
+    getter: 'getAmbient',
+    setter: 'setAmbient'
+  },
+    diffuse = {
+    default: new ic.Color(0.0, 0.0, 0.0),
+    hasIntensity: false,
+    privite: '_diffuse',
+    uniform: '_diffuseUniform',
+    getter: 'getDiffuse',
+    setter: 'setDiffuse'
+  },
+    specular = {
+    default: new ic.Color(0.0, 0.0, 0.0),
+    hasIntensity: false,
+    privite: '_specular',
+    uniform: '_specularUniform',
+    getter: 'getSpecular',
+    setter: 'setSpecular'
+  },
+  emissive = {
+    default: new ic.Color(0.0, 0.0, 0.0),
+    hasIntensity: false,
+    privite: '_emissive',
+    uniform: '_emissiveUniform',
+    getter: 'getEmissive',
+    setter: 'setEmissive'
+  }
+}
+```

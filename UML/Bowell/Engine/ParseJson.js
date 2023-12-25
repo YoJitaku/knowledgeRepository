@@ -626,68 +626,7 @@
 
     return instances;
   }
-  function loadTexture(
-    loader,
-    gltf,
-    textureInfo,
-    supportedImageFormats,
-    frameState,
-    samplerOverride
-  ) {
-    const imageId = GltfLoaderUtil.getImageIdFromTexture({
-      gltf: gltf,
-      textureId: textureInfo.index,
-      supportedImageFormats: supportedImageFormats,
-    });
-
-    if (!defined(imageId)) {
-      return undefined;
-    }
-
-    const textureLoader = ResourceCache.getTextureLoader({
-      gltf: gltf,
-      textureInfo: textureInfo,
-      gltfResource: loader._gltfResource,
-      baseResource: loader._baseResource,
-      supportedImageFormats: supportedImageFormats,
-      frameState: frameState,
-      asynchronous: loader._asynchronous,
-    });
-
-    const textureReader = GltfLoaderUtil.createModelTextureReader({
-      textureInfo: textureInfo,
-    });
-
-    const index = loader._textureLoaders.length;
-    loader._textureLoaders.push(textureLoader);
-    const promise = textureLoader.load().catch((error) => {
-      if (loader.isDestroyed()) {
-        return;
-      }
-
-      if (!loader._incrementallyLoadTextures) {
-        // If incrementallyLoadTextures is false, throw the error to ensure the loader state
-        // immediately is set to have failed
-        throw error;
-      }
-
-      // Otherwise, save the error so it can be thrown next
-      loader._textureState = GltfLoaderState.FAILED;
-      loader._textureErrors.push(error);
-    });
-    loader._texturesPromises.push(promise);
-    // This can only execute once textureLoader.process() has run and returns true
-    // Save this finish callback by the loader index so it can be called
-    // in process().
-    loader._textureCallbacks[index] = () => {
-      textureReader.texture = textureLoader.texture;
-      if (defined(samplerOverride)) {
-        textureReader.texture.sampler = samplerOverride;
-      }
-    };
-
-    return textureReader;
-  }
+  
   //function loadSkin() {}
   //function loadAnimation() {}
   //function loadArticulation() {}
